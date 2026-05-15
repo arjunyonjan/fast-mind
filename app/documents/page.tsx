@@ -1,109 +1,44 @@
 ﻿"use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import RingLoader from '@/components/RingLoader';
+import { useToast } from '@/components/ToastProvider';
+import ConfirmModal from '@/components/ConfirmModal';
 
-interface Document {
-  _id: string;
-  title: string;
-  slug: string;
-  createdAt: string;
-  updatedAt: string;
-}
+interface Document { _id: string; title: string; content: string; updatedAt: string; }
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const { showToast } = useToast();
 
-  useEffect(() => {
-    fetchDocuments();
-  }, []);
+  const fetchDocs = () => { fetch('/api/documents').then(res => res.json()).then(data => { if (data.success) setDocuments(data.documents); setLoading(false); }); };
+  useEffect(() => { fetchDocs(); }, []);
 
-  async function fetchDocuments() {
-    try {
-      const res = await fetch('/api/documents');
-      const data = await res.json();
-      if (data.success) {
-        setDocuments(data.documents);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    const res = await fetch(`/api/documents/${deleteId}`, { method: 'DELETE' });
+    if ((await res.json()).success) { showToast('Document deleted!', 'success'); fetchDocs(); }
+    else showToast('Failed to delete', 'error');
+    setDeleteId(null);
+  };
 
-  async function deleteDocument(id: string) {
-    if (!confirm('Delete this document?')) return;
-    try {
-      const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        setDocuments(documents.filter(doc => doc._id !== id));
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-pulse text-[#0099cc] text-xl">Loading...</div>
-      </div>
-    );
-  }
+  if (loading) return <RingLoader />;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">My Documents</h1>
-          <p className="text-gray-500 mt-1">Manage your FastMind notes</p>
-        </div>
-        <Link
-          href="/documents/new"
-          className="bg-gradient-to-r from-[#0099cc] to-[#0077aa] text-white px-5 py-2 rounded-lg font-medium hover:shadow-lg transition"
-        >
-          + New Document
-        </Link>
-      </div>
-
-      {documents.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
-          <div className="text-5xl mb-3">📭</div>
-          <p className="text-gray-500">No documents yet. Create your first one!</p>
-          <Link
-            href="/documents/new"
-            className="inline-block mt-4 text-[#0099cc] hover:underline"
-          >
-            Create now →
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {documents.map((doc) => (
-            <div
-              key={doc._id}
-              className="bg-white rounded-lg p-5 flex justify-between items-center hover:shadow-md transition border border-gray-100 group"
-            >
-              <Link href={`/documents/${doc._id}`} className="flex-1">
-                <h2 className="text-lg font-semibold text-gray-800 group-hover:text-[#0099cc] transition">
-                  {doc.title}
-                </h2>
-                <p className="text-sm text-gray-400 mt-1">
-                  Updated {new Date(doc.updatedAt).toLocaleDateString()}
-                </p>
-              </Link>
-              <button
-                onClick={() => deleteDocument(doc._id)}
-                className="text-red-400 hover:text-red-600 px-3 py-1 rounded transition"
-              >
-                Delete
-              </button>
+    <>
+      <ConfirmModal isOpen={!!deleteId} title="Delete Document" message="This action cannot be undone." onConfirm={handleDelete} onCancel={() => setDeleteId(null)} />
+      <div className="max-w-5xl mx-auto px-4 py-12">
+        <div className="flex justify-between items-center mb-8"><h1 className="text-3xl font-bold text-gray-900">My Documents</h1><Link href="/documents/new" className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-5 py-2 rounded-lg">+ New</Link></div>
+        {documents.length === 0 ? <div className="text-center py-12 bg-gray-50 rounded-xl"><p className="text-gray-400">No documents yet.</p></div> :
+          <div className="space-y-3">{documents.map((doc) => (
+            <div key={doc._id} className="bg-white border rounded-xl p-5 flex justify-between items-center hover:shadow-md">
+              <Link href={`/documents/${doc._id}`} className="flex-1"><h2 className="font-semibold group-hover:text-cyan-600">{doc.title}</h2><p className="text-sm text-gray-400">{new Date(doc.updatedAt).toLocaleDateString()}</p></Link>
+              <button onClick={() => setDeleteId(doc._id)} className="text-red-500 hover:text-red-700 px-3 py-1">Delete</button>
             </div>
-          ))}
-        </div>
-      )}
-    </div>
+          ))}</div>}
+      </div>
+    </>
   );
 }

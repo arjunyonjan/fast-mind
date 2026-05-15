@@ -29,3 +29,25 @@
 .animate-modal-pop {
   animation: modal-pop 0.2s ease-out;
 }
+
+@keyframes slide-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes modal-pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.animate-slide-in { animation: slide-in 0.3s ease-out; }
+.animate-modal-pop { animation: modal-pop 0.2s ease-out; }
+
+.prose { max-width: 65ch; line-height: 1.75; }
+.prose p { margin-bottom: 1.25em; }
+.prose h1 { font-size: 2.5em; font-weight: 700; margin-top: 1.5em; margin-bottom: 0.5em; }
+.prose h2 { font-size: 1.8em; font-weight: 600; margin-top: 1.25em; margin-bottom: 0.5em; }
+.prose h3 { font-size: 1.4em; font-weight: 600; margin-top: 1em; margin-bottom: 0.5em; }
+.prose ul, .prose ol { padding-left: 1.5em; margin-bottom: 1.25em; }
+.prose li { margin-bottom: 0.25em; }
+.prose code { background-color: #f1f5f9; padding: 0.2em 0.4em; border-radius: 0.25rem; font-size: 0.875em; font-family: monospace; }
+.prose pre { background-color: #0f172a; color: #e2e8f0; padding: 1em; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1.25em; }
+.prose pre code { background-color: transparent; padding: 0; color: inherit; }
+.prose blockquote { border-left: 4px solid #06b6d4; padding-left: 1em; margin-left: 0; margin-bottom: 1.25em; color: #475569; }
+.prose a { color: #06b6d4; text-decoration: underline; }
+.prose img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1.5em 0; }
+.prose table { width: 100%; border-collapse: collapse; margin-bottom: 1.25em; }
+.prose th, .prose td { border: 1px solid #e2e8f0; padding: 0.5em; text-align: left; }
+.prose th { background-color: #f8fafc; font-weight: 600; }
