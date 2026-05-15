@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import RingLoader from '@/components/RingLoader';
+import { useToast } from '@/components/ToastProvider';
 
 const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), {
   ssr: false,
@@ -14,6 +15,7 @@ export default function EditDocumentPage() {
   const params = useParams(); const router = useRouter(); const id = params.id as string;
   const [title, setTitle] = useState(''); const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetch(`/api/documents/${id}`)
@@ -24,9 +26,13 @@ export default function EditDocumentPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); setSaving(true);
     const res = await fetch(`/api/documents/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, content }) });
-    if ((await res.json()).success) router.push(`/documents/${id}`);
-    else alert('Failed to save');
-    setSaving(false);
+    if ((await res.json()).success) {
+      showToast('Document saved successfully!', 'success');
+      router.push(`/documents/${id}`);
+    } else {
+      showToast('Failed to save document', 'error');
+      setSaving(false);
+    }
   }
 
   if (loading) return <RingLoader />;

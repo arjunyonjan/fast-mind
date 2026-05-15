@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import RingLoader from '@/components/RingLoader';
+import { useToast } from '@/components/ToastProvider';
 
 const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), {
   ssr: false,
@@ -16,6 +17,7 @@ export default function NewDocumentPage() {
   const [slug, setSlug] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const generateSlug = () => {
     setSlug(title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
@@ -30,9 +32,13 @@ export default function NewDocumentPage() {
       body: JSON.stringify({ title, slug, content }),
     });
     const data = await res.json();
-    if (data.success) router.push(`/documents/${data.document.id}`);
-    else alert(data.error);
-    setLoading(false);
+    if (data.success) {
+      showToast('Document created successfully!', 'success');
+      router.push(`/documents/${data.document.id}`);
+    } else {
+      showToast(data.error || 'Failed to create document', 'error');
+      setLoading(false);
+    }
   }
 
   if (loading) return <RingLoader />;
