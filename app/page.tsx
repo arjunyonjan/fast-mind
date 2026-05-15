@@ -1,66 +1,86 @@
-﻿import Link from 'next/link';
+﻿"use client";
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+
+interface Document {
+  _id: string;
+  title: string;
+  slug: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function Home() {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  async function fetchDocuments() {
+    try {
+      const res = await fetch('/api/documents');
+      const data = await res.json();
+      if (data.success) {
+        setDocuments(data.documents);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="min-h-[calc(100vh-64px)]">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0099cc]/10 via-transparent to-[#0077aa]/5" />
-        
-        <div className="max-w-5xl mx-auto px-4 py-20 text-center relative">
-          <div className="inline-block mb-4">
-            <span className="text-5xl animate-pulse">⚡</span>
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-[#0099cc] to-[#0077aa] bg-clip-text text-transparent">
-              FastMind
-            </span>
-          </h1>
-          
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Lightning-fast document writing and organization. 
-            Inspired by Yamaha FZ25 Aqua Blue — sleek, powerful, and efficient.
-          </p>
-          
-          <div className="flex gap-4 justify-center">
-            <Link
-              href="/documents"
-              className="bg-gradient-to-r from-[#0099cc] to-[#0077aa] text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-[#0099cc]/30 transition-all"
-            >
-              Get Started
-            </Link>
-            <Link
-              href="/documents/new"
-              className="border-2 border-[#0099cc] text-[#0099cc] px-6 py-3 rounded-lg font-semibold hover:bg-[#0099cc]/10 transition"
-            >
-              Create New
-            </Link>
-          </div>
+    <div className="max-w-5xl mx-auto px-4 py-12">
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 shadow-lg mb-4">
+          <span className="text-3xl">⚡</span>
         </div>
+        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+          FastMind
+        </h1>
+        <p className="text-gray-500 mt-2">Lightning-fast document writing and organization</p>
+        <Link
+          href="/documents/new"
+          className="inline-block mt-6 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2.5 rounded-lg font-medium hover:shadow-lg transition"
+        >
+          + New Document
+        </Link>
       </div>
 
-      {/* Features */}
-      <div className="max-w-5xl mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition">
-            <div className="text-3xl mb-3">⚡</div>
-            <h3 className="text-xl font-semibold mb-2">Lightning Fast</h3>
-            <p className="text-gray-500">Built with Next.js 16 for instant page loads and smooth editing.</p>
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold text-gray-700 mb-4">Recent Documents</h2>
+        
+        {loading ? (
+          <div className="text-center py-8 text-cyan-500">Loading...</div>
+        ) : documents.length === 0 ? (
+          <div className="text-center py-12 bg-gray-50 rounded-xl">
+            <p className="text-gray-400">No documents yet. Create your first one!</p>
           </div>
-          
-          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition">
-            <div className="text-3xl mb-3">📝</div>
-            <h3 className="text-xl font-semibold mb-2">Easy Writing</h3>
-            <p className="text-gray-500">Create, edit, and organize your documents effortlessly.</p>
-          </div>
-          
-          <div className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition">
-            <div className="text-3xl mb-3">🔄</div>
-            <h3 className="text-xl font-semibold mb-2">Always Synced</h3>
-            <p className="text-gray-500">Your data lives in MongoDB Atlas, accessible anywhere.</p>
-          </div>
-        </div>
+        ) : (
+          documents.map((doc) => (
+            <Link
+              key={doc._id}
+              href={`/documents/${doc._id}`}
+              className="block bg-white border border-gray-100 rounded-xl p-5 hover:shadow-md hover:border-cyan-200 transition group"
+            >
+              <h3 className="text-lg font-semibold text-gray-800 group-hover:text-cyan-600 transition">
+                {doc.title}
+              </h3>
+              <p className="text-sm text-gray-400 mt-1">
+                Updated {new Date(doc.updatedAt).toLocaleDateString()}
+              </p>
+              {doc.content && (
+                <p className="text-sm text-gray-500 mt-2 line-clamp-2">
+                  {doc.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
+                </p>
+              )}
+            </Link>
+          ))
+        )}
       </div>
     </div>
   );

@@ -1,99 +1,49 @@
 ﻿"use client";
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 
-export default function EditDocumentPage() {
-  const params = useParams();
-  const router = useRouter();
-  const id = params.id as string;
-  
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+interface Document { _id: string; title: string; content: string; createdAt: string; updatedAt: string; }
 
-  useEffect(() => {
-    fetchDocument();
-  }, [id]);
+export default function ViewDocumentPage() {
+  const params = useParams(); const router = useRouter(); const id = params.id as string;
+  const [doc, setDoc] = useState<Document | null>(null); const [loading, setLoading] = useState(true);
+
+  useEffect(() => { fetchDocument(); }, [id]);
 
   async function fetchDocument() {
-    try {
-      const res = await fetch(`/api/documents/${id}`);
-      const data = await res.json();
-      if (data.success) {
-        setTitle(data.document.title);
-        setContent(data.document.content || '');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
+    try { const res = await fetch(`/api/documents/${id}`); const data = await res.json();
+      if (data.success) setDoc(data.document);
+    } catch (error) { console.error('Error:', error);
+    } finally { setLoading(false); }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/documents/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, content }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        router.push('/documents');
-      } else {
-        alert(data.error);
-      }
-    } catch (error) {
-      alert('Failed to save');
-    } finally {
-      setSaving(false);
-    }
+  async function handleDelete() {
+    if (!confirm('Delete this document?')) return;
+    try { const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
+      if ((await res.json()).success) router.push('/');
+    } catch (error) { alert('Failed to delete'); }
   }
 
-  if (loading) return <div className="p-8">Loading...</div>;
+  if (loading) return <div className="flex justify-center items-center h-64 text-cyan-500">Loading...</div>;
+  if (!doc) return <div className="max-w-2xl mx-auto px-4 py-12 text-center"><p>Document not found</p><Link href="/" className="text-cyan-500">← Back</Link></div>;
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Edit Document</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block font-medium mb-1">Title</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-            required
-          />
+    <div className="max-w-3xl mx-auto px-4 py-12">
+      <Link href="/" className="text-cyan-500 hover:text-cyan-600 text-sm">← Back home</Link>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-4 overflow-hidden">
+        <div className="p-6 border-b border-gray-100">
+          <h1 className="text-3xl font-bold text-gray-900">{doc.title}</h1>
+          <div className="flex gap-3 mt-4">
+            <Link href={`/documents/${id}/edit`} className="px-4 py-1.5 bg-cyan-500 text-white text-sm rounded-lg hover:bg-cyan-600 transition">Edit</Link>
+            <button onClick={handleDelete} className="px-4 py-1.5 border border-red-300 text-red-600 text-sm rounded-lg hover:bg-red-50 transition">Delete</button>
+          </div>
         </div>
-        <div>
-          <label className="block font-medium mb-1">Content</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={15}
-            className="w-full border rounded px-3 py-2 font-mono"
-          />
+        <div className="p-6 prose prose-cyan max-w-none">
+          {doc.content ? <div dangerouslySetInnerHTML={{ __html: doc.content }} /> : <p className="text-gray-400 italic">No content yet.</p>}
         </div>
-        <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-          <a
-            href="/documents"
-            className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
-          >
-            Cancel
-          </a>
-        </div>
-      </form>
+        <div className="p-4 bg-gray-50 border-t text-xs text-gray-400">Updated: {new Date(doc.updatedAt).toLocaleString()}</div>
+      </div>
     </div>
   );
 }
