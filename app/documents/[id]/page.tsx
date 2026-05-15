@@ -2,31 +2,28 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import RingLoader from '@/components/RingLoader';
 
-interface Document { _id: string; title: string; content: string; createdAt: string; updatedAt: string; }
+interface Document { _id: string; title: string; content: string; updatedAt: string; }
 
 export default function ViewDocumentPage() {
   const params = useParams(); const router = useRouter(); const id = params.id as string;
   const [doc, setDoc] = useState<Document | null>(null); const [loading, setLoading] = useState(true);
 
-  useEffect(() => { fetchDocument(); }, [id]);
-
-  async function fetchDocument() {
-    try { const res = await fetch(`/api/documents/${id}`); const data = await res.json();
-      if (data.success) setDoc(data.document);
-    } catch (error) { console.error('Error:', error);
-    } finally { setLoading(false); }
-  }
+  useEffect(() => {
+    fetch(`/api/documents/${id}`)
+      .then(res => res.json())
+      .then(data => { if (data.success) setDoc(data.document); setLoading(false); });
+  }, [id]);
 
   async function handleDelete() {
     if (!confirm('Delete this document?')) return;
-    try { const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
-      if ((await res.json()).success) router.push('/');
-    } catch (error) { alert('Failed to delete'); }
+    const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
+    if ((await res.json()).success) router.push('/');
   }
 
-  if (loading) return <div className="flex justify-center items-center h-64 text-cyan-500">Loading...</div>;
-  if (!doc) return <div className="max-w-2xl mx-auto px-4 py-12 text-center"><p>Document not found</p><Link href="/" className="text-cyan-500">← Back</Link></div>;
+  if (loading) return <RingLoader />;
+  if (!doc) return <div className="text-center py-12"><Link href="/" className="text-cyan-500">← Back</Link></div>;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
@@ -35,8 +32,8 @@ export default function ViewDocumentPage() {
         <div className="p-6 border-b border-gray-100">
           <h1 className="text-3xl font-bold text-gray-900">{doc.title}</h1>
           <div className="flex gap-3 mt-4">
-            <Link href={`/documents/${id}/edit`} className="px-4 py-1.5 bg-cyan-500 text-white text-sm rounded-lg hover:bg-cyan-600 transition">Edit</Link>
-            <button onClick={handleDelete} className="px-4 py-1.5 border border-red-300 text-red-600 text-sm rounded-lg hover:bg-red-50 transition">Delete</button>
+            <Link href={`/documents/${id}/edit`} className="px-4 py-1.5 bg-cyan-500 text-white text-sm rounded-lg hover:bg-cyan-600">Edit</Link>
+            <button onClick={handleDelete} className="px-4 py-1.5 border border-red-300 text-red-600 text-sm rounded-lg hover:bg-red-50">Delete</button>
           </div>
         </div>
         <div className="p-6 prose prose-cyan max-w-none">
