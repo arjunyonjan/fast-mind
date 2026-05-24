@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         model: "deepseek-chat",
         messages: [
-          { role: "system", content: 'Classify into: "create_task", "list_tasks", "complete_task", "delete_task", "create_document", "chat". Return ONLY the word.' },
+          { role: "system", content: 'You are FastMind AI. Features: Spaces, Tasks (priority/status), Documents, Brain Panel, Debug Panel. Actions: create_task, list_tasks, complete_task, delete_task, create_document, chat. Classify into: "create_task", "list_tasks", "complete_task", "delete_task", "create_document", "chat". Return ONLY the word.' },
           { role: "user", content: message }
         ],
         temperature: 0, max_tokens: 10
