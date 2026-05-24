@@ -8,10 +8,11 @@ interface Doc { _id: string; title: string; content: string; updatedAt: string; 
 export default function DocumentsPage() {
   const [docs, setDocs] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetch("/api/documents").then(r => r.json()).then(data => { if (data.success) setDocs(data.documents); }).finally(() => setLoading(false));
+    fetch("/api/documents").then(r => r.json()).then(data => { if (data.success) setDocs(data.documents); }).finally(() => { setLoading(false); setReady(true); });
   }, []);
 
   const filtered = docs.filter(d => d.title.toLowerCase().includes(search.toLowerCase()));
