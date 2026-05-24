@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
@@ -7,15 +7,15 @@ export const useTheme = () => useContext(ThemeCtx);
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme") as Theme;
-    if (saved) { setTheme(saved); document.documentElement.classList.toggle("dark", saved === "dark"); }
-    else {
-      const prefers = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setTheme(prefers ? "dark" : "light");
-      document.documentElement.classList.toggle("dark", prefers);
-    }
+    setMounted(true);
+    const saved = localStorage.getItem("theme") as Theme | null;
+    const prefers = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initial = saved || (prefers ? "dark" : "light");
+    setTheme(initial);
+    document.documentElement.classList.toggle("dark", initial === "dark");
   }, []);
 
   const toggle = () => {
@@ -24,6 +24,8 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     localStorage.setItem("theme", next);
     document.documentElement.classList.toggle("dark", next === "dark");
   };
+
+  if (!mounted) return <>{children}</>;
 
   return <ThemeCtx.Provider value={{ theme, toggle }}>{children}</ThemeCtx.Provider>;
 }
