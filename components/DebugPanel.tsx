@@ -1,0 +1,117 @@
+﻿"use client";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Bug, X, ChevronDown, Maximize2, Activity, Circle, Copy, Check } from "lucide-react";
+
+interface LogEntry { time: string; type: "info"|"warn"|"error"|"api"; message: string; }
+interface ApiCall { id: number; time: string; method: string; url: string; status: number|"pending"|"error"; duration: number|null; preview: string; }
+
+let apiId = 0;
+const LS_KEY = "debugpanel_state";
+
+function loadState() {
+  if (typeof window === "undefined") return null;
+  try { const s = localStorage.getItem(LS_KEY); return s ? JSON.parse(s) : null; } catch { return null; }
+}
+function saveState(state: any) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch {}
+}
+
+export default function DebugPanel() {
+  const saved = loadState();
+  const [open, setOpen] = useState(saved?.open ?? true);
+  const [minimized, setMinimized] = useState(saved?.minimized ?? false);
+  const [tab, setTab] = useState<"logs"|"api">(saved?.tab ?? "logs");
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [apiCalls, setApiCalls] = useState<ApiCall[]>([]);
+  const [envVars, setEnvVars] = useState<Record<string,string>>({});
+  const [position, setPosition] = useState(saved?.position ?? { x: typeof window!=="undefined"?window.innerWidth-400:100, y: 80 });
+  const [size, setSize] = useState(saved?.size ?? { w: 380, h: 420 });
+  const [dragging, setDragging] = useState(false);
+  const [resizing, setResizing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const offset = useRef({x:0,y:0});
+  const resizeStart = useRef({x:0,y:0,w:0,h:0});
+
+  useEffect(() => { saveState({ open, minimized, tab, position, size }); }, [open, minimized, tab, position, size]);
+
+  useEffect(() => {
+    fetch("/api/debug").then(r=>r.json()).then(setEnvVars);
+    const origLog=console.log, origWarn=console.warn, origErr=console.error;
+    const add=(type:LogEntry["type"],args:any[])=>{setLogs(p=>[...p.slice(-99),{time:new Date().toLocaleTimeString(),type,message:args.map(String).join(" ")}])};
+    console.log=(...a)=>{origLog(...a);setTimeout(()=>add("info",a),0)}; console.warn=(...a)=>{origWarn(...a);setTimeout(()=>add("warn",a),0)}; console.error=(...a)=>{origErr(...a);setTimeout(()=>add("error",a),0)};
+    const origFetch=window.fetch;
+    window.fetch=async(...args:any[])=>{
+      const id=++apiId,start=performance.now(),url=args[0],options=args[1],method=options?.method||"GET";
+      const call:ApiCall={id,time:new Date().toLocaleTimeString(),method,url:typeof url==="string"?url:url.toString(),status:"pending",duration:null,preview:""};
+      setApiCalls(p=>[call,...p.slice(0,19)]);
+      try{
+        const res=await origFetch(...args);
+        const dur=Math.round(performance.now()-start),clone=res.clone();
+        let preview="";try{preview=(await clone.text()).slice(0,100)}catch{}
+        setApiCalls(p=>p.map(c=>c.id===id?{...c,status:res.status,duration:dur,preview}:c));
+        setTimeout(()=>add("api",[method+" "+url+" \u2192 "+res.status+" ("+dur+"ms)"]),0);
+        return res;
+      }catch(e:any){
+        const dur=Math.round(performance.now()-start);
+        setApiCalls(p=>p.map(c=>c.id===id?{...c,status:"error",duration:dur,preview:e.message}:c));
+        setTimeout(()=>add("error",[method+" "+url+" \u2192 ERROR: "+e.message]),0);
+        throw e;
+      }
+    };
+    return ()=>{console.log=origLog;console.warn=origWarn;console.error=origErr;window.fetch=origFetch};
+  },[]);
+
+  const copyLogs = () => {
+    const text = logs.map(l => `[${l.time}] [${l.type}] ${l.message}`).join("\n");
+    navigator.clipboard.writeText(text);
+    setCopied(true); setTimeout(()=>setCopied(false),2000);
+  };
+
+  const onMD=(e:React.MouseEvent)=>{if(resizing)return;setDragging(true);offset.current={x:e.clientX-position.x,y:e.clientY-position.y}};
+  const onRD=(e:React.MouseEvent)=>{e.stopPropagation();setResizing(true);resizeStart.current={x:e.clientX,y:e.clientY,w:size.w,h:size.h}};
+  useEffect(()=>{
+    const mv=(e:MouseEvent)=>{if(dragging)setPosition({x:e.clientX-offset.current.x,y:e.clientY-offset.current.y});if(resizing)setSize({w:Math.max(300,resizeStart.current.w+e.clientX-resizeStart.current.x),h:Math.max(220,resizeStart.current.h+e.clientY-resizeStart.current.y)})};
+    const up=()=>{setDragging(false);setResizing(false)};
+    window.addEventListener("mousemove",mv);window.addEventListener("mouseup",up);
+    return ()=>{window.removeEventListener("mousemove",mv);window.removeEventListener("mouseup",up)};
+  },[dragging,resizing]);
+
+  if(!open)return<button onClick={()=>setOpen(true)} className="fixed bottom-4 right-4 z-[9999] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 p-2 rounded-full shadow-lg"><Bug size={18}/></button>;
+
+  const sc=(s:number|string)=>{if(s==="pending")return"text-yellow-400";if(s==="error")return"text-red-400";if(typeof s==="number"&&s>=400)return"text-red-400";if(typeof s==="number"&&s>=200)return"text-green-400";return"text-zinc-400"};
+
+  return (
+    <div style={{left:position.x,top:position.y,width:size.w,height:minimized?40:size.h}} className="fixed z-[9999] bg-zinc-900/95 backdrop-blur border border-zinc-700 rounded-xl shadow-2xl flex flex-col overflow-hidden text-xs font-mono">
+      <div onMouseDown={onMD} className="flex items-center justify-between px-3 py-2 bg-zinc-800 cursor-move shrink-0" onDoubleClick={() => setMinimized(!minimized)}>
+        <span className="font-medium text-zinc-400 flex items-center gap-2"><Bug size={14}/>Debug</span>
+        <div className="flex items-center gap-1">
+          <button onClick={()=>setMinimized(!minimized)} className="text-zinc-500 hover:text-white"><ChevronDown size={14} className={`transition ${minimized?"rotate-180":""}`}/></button>
+          <button onClick={()=>setOpen(false)} className="text-zinc-500 hover:text-white"><X size={14}/></button>
+        </div>
+      </div>
+      {!minimized&&(<>
+        <div className="flex border-b border-zinc-800 shrink-0">
+          <button onClick={()=>setTab("logs")} className={`flex-1 py-1.5 text-center ${tab==="logs"?"bg-zinc-800 text-white":"text-zinc-500 hover:text-zinc-300"}`}>Logs</button>
+          <button onClick={()=>setTab("api")} className={`flex-1 py-1.5 text-center flex items-center justify-center gap-1 ${tab==="api"?"bg-zinc-800 text-white":"text-zinc-500 hover:text-zinc-300"}`}><Activity size={12}/>API ({apiCalls.length})</button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-2 space-y-1 select-text">
+          {tab==="logs"&&(<>
+            <div className="flex items-center justify-between px-1 mb-1">
+              <span className="text-zinc-600 truncate">ENV: {Object.entries(envVars).filter(([k])=>k!=="allKeys").map(([k,v])=>`${k}=${String(v)}`).join(" | ")||"loading..."}</span>
+              <button onClick={copyLogs} className="flex items-center gap-1 text-zinc-500 hover:text-white shrink-0 ml-2" title="Copy all logs">
+                {copied?<Check size={12} className="text-green-400"/>:<Copy size={12}/>}
+              </button>
+            </div>
+            {logs.map((l,i)=>(<div key={i} className={`px-1 select-text ${l.type==="error"?"text-red-400":l.type==="warn"?"text-yellow-400":l.type==="api"?"text-cyan-400":"text-zinc-400"}`}><span className="text-zinc-600">[{l.time}]</span> {l.message}</div>))}
+          </>)}
+          {tab==="api"&&apiCalls.map(c=>(<div key={c.id} className="bg-zinc-800/50 rounded px-2 py-1 select-text"><div className="flex items-center gap-2"><Circle size={8} className={sc(c.status)}/><span className="text-zinc-500">{c.time}</span><span className="text-blue-400 font-semibold">{c.method}</span><span className="text-zinc-300 truncate">{c.url}</span><span className={sc(c.status)}>{c.status}{c.duration?` (${c.duration}ms)`:""}</span></div>{c.preview&&<div className="text-zinc-500 truncate mt-0.5 pl-5 select-text">{c.preview}</div>}</div>))}
+        </div>
+      </>)}
+      <div onMouseDown={onRD} className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize text-zinc-600 hover:text-zinc-400 flex items-end justify-end pb-0.5 pr-0.5"><Maximize2 size={12} className="rotate-90"/></div>
+    </div>
+  );
+}
+
+
+
+

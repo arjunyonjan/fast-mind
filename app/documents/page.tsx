@@ -1,44 +1,47 @@
-﻿"use client";
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import RingLoader from '@/components/RingLoader';
-import { useToast } from '@/components/ToastProvider';
-import ConfirmModal from '@/components/ConfirmModal';
+"use client";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { FileText, Plus, ArrowLeft } from "lucide-react";
 
-interface Document { _id: string; title: string; content: string; updatedAt: string; }
+interface Doc { _id: string; title: string; content: string; updatedAt: string; }
 
 export default function DocumentsPage() {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [docs, setDocs] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const { showToast } = useToast();
 
-  const fetchDocs = () => { fetch('/api/documents').then(res => res.json()).then(data => { if (data.success) setDocuments(data.documents); setLoading(false); }); };
-  useEffect(() => { fetchDocs(); }, []);
+  useEffect(() => {
+    fetch("/api/documents")
+      .then((r) => r.json())
+      .then((data) => { if (data.success) setDocs(data.documents); })
+      .finally(() => setLoading(false));
+  }, []);
 
-  const handleDelete = async () => {
-    if (!deleteId) return;
-    const res = await fetch(`/api/documents/${deleteId}`, { method: 'DELETE' });
-    if ((await res.json()).success) { showToast('Document deleted!', 'success'); fetchDocs(); }
-    else showToast('Failed to delete', 'error');
-    setDeleteId(null);
-  };
-
-  if (loading) return <RingLoader />;
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
-    <>
-      <ConfirmModal isOpen={!!deleteId} title="Delete Document" message="This action cannot be undone." onConfirm={handleDelete} onCancel={() => setDeleteId(null)} />
-      <div className="max-w-5xl mx-auto px-4 py-12">
-        <div className="flex justify-between items-center mb-8"><h1 className="text-3xl font-bold text-gray-900">My Documents</h1><Link href="/documents/new" className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-5 py-2 rounded-lg">+ New</Link></div>
-        {documents.length === 0 ? <div className="text-center py-12 bg-gray-50 rounded-xl"><p className="text-gray-400">No documents yet.</p></div> :
-          <div className="space-y-3">{documents.map((doc) => (
-            <div key={doc._id} className="bg-white border rounded-xl p-5 flex justify-between items-center hover:shadow-md">
-              <Link href={`/documents/${doc._id}`} className="flex-1"><h2 className="font-semibold group-hover:text-cyan-600">{doc.title}</h2><p className="text-sm text-gray-400">{new Date(doc.updatedAt).toLocaleDateString()}</p></Link>
-              <button onClick={() => setDeleteId(doc._id)} className="text-red-500 hover:text-red-700 px-3 py-1">Delete</button>
-            </div>
-          ))}</div>}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50/30 p-6 md:p-12">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-gray-400 hover:text-gray-600"><ArrowLeft size={20} /></Link>
+            <h1 className="text-2xl font-semibold flex items-center gap-2"><FileText size={20} /> All Documents</h1>
+          </div>
+          <Link href="/documents/new" className="flex items-center gap-1 px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm hover:bg-cyan-600 transition"><Plus size={16} /> New</Link>
+        </div>
+        {docs.length === 0 ? (
+          <p className="text-gray-400 italic text-center py-12">No documents yet.</p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {docs.map((doc) => (
+              <Link key={doc._id} href={`/documents/${doc._id}`} className="bg-white border border-gray-100 rounded-xl p-5 hover:shadow-md hover:border-cyan-200 transition">
+                <h3 className="font-semibold text-gray-800 truncate">{doc.title}</h3>
+                <p className="text-xs text-gray-400 mt-1">{new Date(doc.updatedAt).toLocaleDateString()}</p>
+                {doc.content && <p className="text-sm text-gray-500 mt-2 line-clamp-2">{doc.content.replace(/<[^>]*>/g, "").substring(0, 120)}</p>}
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
