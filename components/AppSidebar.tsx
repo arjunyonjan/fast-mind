@@ -9,8 +9,12 @@ export default function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const { theme, toggle } = useTheme();
+  const [newSpace, setNewSpace] = useState(false);
+  const [spaceName, setSpaceName] = useState('');
+  
   const [hfChecking, setHfChecking] = useState(false);
-  const [hfOnline, setHfOnline] = useState<boolean | null>(null);
+  const [spaces, setSpaces] = useState<{_id:string,name:string}[]>([]);
+    const [hfOnline, setHfOnline] = useState<boolean | null>(null);
 
   const check = useCallback(async () => {
     setHfChecking(true);
@@ -27,6 +31,7 @@ export default function AppSidebar() {
     setHfChecking(false);
   }, []);
 
+  useEffect(() => { fetch('/api/spaces').then(r=>r.json()).then(d=>{if(d.success)setSpaces(d.spaces)}); }, []);
   useEffect(() => {
 
     check();
@@ -63,7 +68,7 @@ export default function AppSidebar() {
           <Link href="/documents/new" className="flex items-center gap-2 w-full px-3 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg text-sm transition"><Plus size={16} /> New</Link>
         </div>
       )}
-      <nav className="flex-1 space-y-0.5 px-3">
+      {!collapsed && (<><div className="px-3 mb-1 flex items-center justify-between"><span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Spaces</span><button onClick={()=>setNewSpace(!newSpace)} className="text-zinc-400 hover:text-white text-xs">+</button></div>{newSpace && <div className="px-3 mb-2"><input value={spaceName} onChange={e=>setSpaceName(e.target.value)} onKeyDown={async e=>{if(e.key==="Enter"&&spaceName.trim()){await fetch("/api/spaces",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:spaceName})});setSpaceName("");setNewSpace(false);fetch("/api/spaces").then(r=>r.json()).then(d=>{if(d.success)setSpaces(d.spaces)});}}} placeholder="Space name..." className="w-full px-2 py-1 text-xs bg-gray-100 dark:bg-zinc-800 rounded border-none outline-none" autoFocus /></div>}{spaces.map(s=>(<Link key={s._id} href={`/?space=${s._id}`} className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition ml-1"><span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />{s.name}</Link>))}</>)}<nav className="flex-1 space-y-0.5 px-3">
         <Link href="/" className={link("/")} title="Home"><Home size={18} />{!collapsed && <span>Home</span>}</Link>
         <Link href="/documents" className={link("/documents")} title="Documents"><FileText size={18} />{!collapsed && <span>Documents</span>}</Link>
         <Link href="/tasks" className={link("/tasks")} title="Tasks"><LayoutGrid size={18} />{!collapsed && <span>Tasks</span>}</Link>
