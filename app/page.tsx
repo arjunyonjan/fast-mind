@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Sparkles, Send, FileText, User, Bot, WifiOff } from 'lucide-react';
+import { Sparkles, Send, FileText, User, Bot } from 'lucide-react';
 
 interface Document { _id: string; title: string; content: string; updatedAt: string; }
 
@@ -12,17 +12,13 @@ export default function Home() {
   const [input, setInput] = useState('');
   const [taskCount, setTaskCount] = useState(0);
   const [aiLoading, setAiLoading] = useState(false);
-  const [hfOnline, setHfOnline] = useState<boolean | null>(null);
+  const [spaces, setSpaces] = useState<{_id:string,name:string}[]>([]);
+  const [selectedSpace, setSelectedSpace] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ inputs: 'ping' })
-    }).then(r => setHfOnline(r.ok || r.status === 503)).catch(() => setHfOnline(false));
-  }, []);
-
-  useEffect(() => {
     fetch('/api/tasks').then(r=>r.json()).then(d=>{if(d.success)setTaskCount(d.tasks.filter((t:any)=>t.status!=="completed").length)});
+    fetch('/api/spaces').then(r=>r.json()).then(d=>{if(d.success)setSpaces(d.spaces)});
     fetch('/api/documents').then(res => res.json()).then(data => { if (data.success) setDocuments(data.documents); setLoading(false); });
   }, []);
 
@@ -30,21 +26,19 @@ export default function Home() {
   useEffect(() => { scrollToBottom(); }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim() || aiLoading || hfOnline === false) return;
+    if (!input.trim() || aiLoading) return;
     const userMsg = { id: Date.now().toString(), role: 'user' as const, content: input };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setAiLoading(true);
     try {
-      const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: userMsg.content }) });
+      const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: userMsg.content, spaceId: selectedSpace || null }) });
       const data = await res.json();
       const assistantMsg = { id: (Date.now()+1).toString(), role: "assistant" as const, content: data.reply || "Done." };
       setMessages(prev => [...prev, assistantMsg]);
     } catch(e) { console.error("[Chat]", e); }
     finally { setAiLoading(false); }
   };
-
-  const hfOffline = hfOnline === false;
 
   return (
     <div className="flex flex-col h-full bg-gradient-to-br from-slate-50 via-white to-cyan-50/30 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
@@ -59,14 +53,21 @@ export default function Home() {
             <Link href="/documents/new" className="inline-block mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition">+ New Document</Link>
           </div>
           <div className="w-full max-w-2xl">
-            {hfOffline && <div className="flex items-center gap-1 text-xs text-red-400 mb-2"><WifiOff size={12}/> AI offline — HuggingFace unreachable</div>}
             <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-800 overflow-hidden">
               <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                placeholder={hfOffline ? "AI is offline — check back soon" : "Ask AI to create tasks, notes, or run commands..."}
+                placeholder="Ask AI to create tasks, notes, or run commands..."
                 className="w-full p-5 text-gray-700 dark:text-zinc-300 resize-none border-none outline-none text-base bg-white dark:bg-zinc-900" rows={3} />
+              {spaces.length > 0 && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50/50 dark:bg-zinc-800/50 border-t border-gray-100 dark:border-zinc-700">
+                  <select value={selectedSpace} onChange={e=>setSelectedSpace(e.target.value)} className="text-xs bg-transparent border border-gray-200 dark:border-zinc-700 rounded px-2 py-1 text-zinc-500 dark:text-zinc-400">
+                    <option value="">No space</option>
+                    {spaces.map(s=>(<option key={s._id} value={s._id}>{s.name}</option>))}
+                  </select>
+                </div>
+              )}
               <div className="flex items-center justify-between px-4 py-3 bg-gray-50/50 dark:bg-zinc-800/50">
                 <div className="text-xs text-gray-400 dark:text-zinc-500">Press Enter to send, Shift+Enter for new line</div>
-                <button onClick={handleSend} disabled={aiLoading || !input.trim() || hfOffline} className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium hover:shadow-md disabled:opacity-50 transition">
+                <button onClick={handleSend} disabled={aiLoading || !input.trim()} className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium hover:shadow-md disabled:opacity-50 transition">
                   <Send className="w-4 h-4" /> Send
                 </button>
               </div>
@@ -118,11 +119,7 @@ export default function Home() {
                 <div className="flex gap-3 justify-start">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center"><Bot className="w-4 h-4 text-white" /></div>
                   <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl px-4 py-3">
-                    <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'150ms'}}></span>
-                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'300ms'}}></span>
-                    </div>
+                    <div className="flex gap-1"><span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span><span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'150ms'}}></span><span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay:'300ms'}}></span></div>
                   </div>
                 </div>
               )}
@@ -133,7 +130,7 @@ export default function Home() {
             <div className="max-w-3xl mx-auto flex gap-3">
               <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                 placeholder="Send a message..." className="flex-1 p-3 rounded-xl resize-none border-none outline-none bg-gray-50 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300" rows={1} style={{ minHeight: '44px', maxHeight: '120px' }} />
-              <button onClick={handleSend} disabled={aiLoading || !input.trim() || hfOffline} className="px-5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium disabled:opacity-50">
+              <button onClick={handleSend} disabled={aiLoading || !input.trim()} className="px-5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium disabled:opacity-50">
                 <Send className="w-5 h-5" />
               </button>
             </div>
