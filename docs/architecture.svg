@@ -1,0 +1,159 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" font-family="Segoe UI, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#34d399"/>
+    </linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.3"/></filter>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="620" fill="url(#bg)" rx="12"/>
+
+  <!-- Title -->
+  <text x="450" y="35" text-anchor="middle" font-size="22" font-weight="bold" fill="#e2e8f0">⚡ FastMind — System Architecture</text>
+  <text x="450" y="55" text-anchor="middle" font-size="11" fill="#64748b">Milestone v0.1.0 · Next.js 16 · MongoDB 7 · HuggingFace (fallback)</text>
+
+  <!-- ============== BROWSER BOX ============== -->
+  <rect x="25" y="80" width="260" height="290" fill="#1e293b" stroke="#334155" stroke-width="2" rx="10" filter="url(#shadow)"/>
+  <rect x="25" y="80" width="260" height="36" fill="#06b6d4" rx="10"/>
+  <rect x="25" y="106" width="260" height="10" fill="#06b6d4"/>
+  <text x="155" y="102" text-anchor="middle" font-size="14" font-weight="bold" fill="#fff">🌐 Browser (Client)</text>
+
+  <!-- Pages -->
+  <rect x="40" y="130" width="230" height="28" fill="#0f172a" stroke="#334155" stroke-width="1" rx="6"/>
+  <text x="52" y="149" font-size="11" fill="#e2e8f0">🏠 Home — chat input + recent docs</text>
+
+  <rect x="40" y="166" width="230" height="28" fill="#0f172a" stroke="#334155" stroke-width="1" rx="6"/>
+  <text x="52" y="185" font-size="11" fill="#e2e8f0">📋 /tasks — task cards, done/delete</text>
+
+  <rect x="40" y="202" width="230" height="28" fill="#0f172a" stroke="#334155" stroke-width="1" rx="6"/>
+  <text x="52" y="221" font-size="11" fill="#e2e8f0">📄 /documents — doc grid, create new</text>
+
+  <rect x="40" y="238" width="230" height="28" fill="#0f172a" stroke="#334155" stroke-width="1" rx="6"/>
+  <text x="52" y="257" font-size="11" fill="#e2e8f0">✏️ /documents/[id] — view+edit+delete</text>
+
+  <!-- Debug Panel badge -->
+  <rect x="40" y="278" width="230" height="28" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="1.5" rx="6" stroke-dasharray="3"/>
+  <text x="52" y="297" font-size="11" fill="#a78bfa">🐛 Debug Panel (floating, drag, resize)</text>
+
+  <rect x="40" y="314" width="230" height="28" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="1" rx="6"/>
+  <text x="52" y="333" font-size="10" fill="#94a3b8">  └ Logs · API calls · ENV · Copy · Ctrl+S</text>
+
+  <!-- ============== NEXT.JS API BOX ============== -->
+  <rect x="320" y="80" width="260" height="290" fill="#1e293b" stroke="#334155" stroke-width="2" rx="10" filter="url(#shadow)"/>
+  <rect x="320" y="80" width="260" height="36" fill="#f59e0b" rx="10"/>
+  <rect x="320" y="106" width="260" height="10" fill="#f59e0b"/>
+  <text x="450" y="102" text-anchor="middle" font-size="14" font-weight="bold" fill="#fff">⚙️ Next.js API Routes</text>
+
+  <rect x="335" y="130" width="230" height="28" fill="#0f172a" stroke="#334155" stroke-width="1" rx="6"/>
+  <text x="347" y="149" font-size="11" fill="#fbbf24">💬 /api/chat POST — NL → task</text>
+
+  <rect x="335" y="166" width="230" height="28" fill="#0f172a" stroke="#334155" stroke-width="1" rx="6"/>
+  <text x="347" y="185" font-size="11" fill="#fbbf24">📋 /api/tasks CRUD</text>
+
+  <rect x="335" y="202" width="230" height="28" fill="#0f172a" stroke="#334155" stroke-width="1" rx="6"/>
+  <text x="347" y="221" font-size="11" fill="#fbbf24">📄 /api/documents CRUD</text>
+
+  <rect x="335" y="238" width="230" height="28" fill="#0f172a" stroke="#334155" stroke-width="1" rx="6"/>
+  <text x="347" y="257" font-size="11" fill="#fbbf24">🔍 /api/debug GET</text>
+
+  <!-- Local parser badge -->
+  <rect x="335" y="278" width="230" height="22" fill="#422006" stroke="#f59e0b" stroke-width="1" rx="4"/>
+  <text x="450" y="293" text-anchor="middle" font-size="9" fill="#fbbf24">🦴 Local NL parser: title + description + priority</text>
+
+  <rect x="335" y="308" width="230" height="22" fill="#422006" stroke="#f59e0b" stroke-width="1" rx="4"/>
+  <text x="450" y="323" text-anchor="middle" font-size="9" fill="#fbbf24">⚡ Ctrl+S save · Confirm delete · Inline edit</text>
+
+  <!-- ============== AI SERVICES BOX ============== -->
+  <rect x="320" y="400" width="260" height="85" fill="#1e293b" stroke="#8b5cf6" stroke-width="1.5" rx="10" filter="url(#shadow)"/>
+  <text x="450" y="420" text-anchor="middle" font-size="13" font-weight="bold" fill="#a78bfa">🤖 AI Services</text>
+  <text x="345" y="442" font-size="10" fill="#94a3b8">HuggingFace (Mistral-7B) — optional</text>
+  <text x="345" y="458" font-size="10" fill="#94a3b8">DeepSeek — ready to swap in</text>
+  <text x="345" y="474" font-size="10" fill="#fbbf24">Local parser — always active fallback</text>
+
+  <!-- ============== MONGODB BOX ============== -->
+  <rect x="615" y="80" width="260" height="290" fill="#1e293b" stroke="#334155" stroke-width="2" rx="10" filter="url(#shadow)"/>
+  <rect x="615" y="80" width="260" height="36" fill="#10b981" rx="10"/>
+  <rect x="615" y="106" width="260" height="10" fill="#10b981"/>
+  <text x="745" y="102" text-anchor="middle" font-size="14" font-weight="bold" fill="#fff">🗄️ MongoDB Atlas</text>
+
+  <rect x="630" y="130" width="230" height="55" fill="#0f172a" stroke="#334155" stroke-width="1" rx="6"/>
+  <text x="642" y="148" font-size="11" font-weight="bold" fill="#34d399">📋 tasks</text>
+  <text x="642" y="164" font-size="10" fill="#94a3b8">title, description, priority, status, source</text>
+  <text x="642" y="178" font-size="10" fill="#94a3b8">createdAt, updatedAt</text>
+
+  <rect x="630" y="195" width="230" height="45" fill="#0f172a" stroke="#334155" stroke-width="1" rx="6"/>
+  <text x="642" y="213" font-size="11" font-weight="bold" fill="#34d399">📄 documents</text>
+  <text x="642" y="229" font-size="10" fill="#94a3b8">title, content, createdAt, updatedAt</text>
+
+  <rect x="630" y="250" width="230" height="40" fill="#0f172a" stroke="#10b981" stroke-width="1" rx="6"/>
+  <text x="642" y="264" font-size="10" fill="#34d399">✅ Auto-creates collections</text>
+  <text x="642" y="278" font-size="10" fill="#94a3b8">Connection pooling, 5s timeout</text>
+
+  <!-- ============== ARROWS ============== -->
+  <!-- Browser → API -->
+  <line x1="280" y1="200" x2="325" y2="200" stroke="#475569" stroke-width="2" marker-end="url(#arrowGray)"/>
+  <!-- API → AI -->
+  <line x1="450" y1="370" x2="450" y2="400" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="4" marker-end="url(#arrowPurple)"/>
+  <!-- API → MongoDB -->
+  <line x1="580" y1="200" x2="620" y2="200" stroke="#475569" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrowGray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#475569"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#8b5cf6"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#10b981"/>
+    </marker>
+  </defs>
+
+  <!-- Feature badges row -->
+  <rect x="25" y="505" width="850" height="65" fill="#1e293b" stroke="#334155" stroke-width="1" rx="8"/>
+  <text x="450" y="520" text-anchor="middle" font-size="12" font-weight="bold" fill="#64748b">✨ FEATURES</text>
+
+  <rect x="45" y="535" width="100" height="22" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="1" rx="11"/>
+  <text x="95" y="550" text-anchor="middle" font-size="9" fill="#a78bfa">🐛 Debug Panel</text>
+
+  <rect x="155" y="535" width="100" height="22" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="1" rx="11"/>
+  <text x="205" y="550" text-anchor="middle" font-size="9" fill="#a78bfa">📡 API Intercept</text>
+
+  <rect x="265" y="535" width="100" height="22" fill="#1e1b4b" stroke="#8b5cf6" stroke-width="1" rx="11"/>
+  <text x="315" y="550" text-anchor="middle" font-size="9" fill="#a78bfa">💾 localStorage</text>
+
+  <rect x="375" y="535" width="100" height="22" fill="#064e3b" stroke="#10b981" stroke-width="1" rx="11"/>
+  <text x="425" y="550" text-anchor="middle" font-size="9" fill="#34d399">✏️ Inline Edit</text>
+
+  <rect x="485" y="535" width="100" height="22" fill="#064e3b" stroke="#10b981" stroke-width="1" rx="11"/>
+  <text x="535" y="550" text-anchor="middle" font-size="9" fill="#34d399">⌨️ Ctrl+S</text>
+
+  <rect x="595" y="535" width="100" height="22" fill="#422006" stroke="#f59e0b" stroke-width="1" rx="11"/>
+  <text x="645" y="550" text-anchor="middle" font-size="9" fill="#fbbf24">🦴 NL Parser</text>
+
+  <rect x="705" y="535" width="100" height="22" fill="#422006" stroke="#f59e0b" stroke-width="1" rx="11"/>
+  <text x="755" y="550" text-anchor="middle" font-size="9" fill="#fbbf24">✅ Done/Delete</text>
+
+  <!-- Footer -->
+  <text x="450" y="600" text-anchor="middle" font-size="10" fill="#475569">FastMind v0.1.0 · Next.js 16 · MongoDB 7 · HuggingFace Mistral · TipTap ready</text>
+</svg>
