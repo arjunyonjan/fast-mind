@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileText, Search } from "lucide-react";
-import AppSidebar from "@/components/AppSidebar";
+
 
 interface Doc { _id: string; title: string; content: string; updatedAt: string; }
 
@@ -18,10 +18,10 @@ export default function DocumentsPage() {
   const filtered = docs.filter(d => d.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="flex h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+    <div className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
       {loading && <div className="fixed top-0 left-0 right-0 h-0.5 z-50"><div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-loading-bar" /></div>}
-      <AppSidebar />
-      <main className="flex-1 overflow-y-auto p-6 md:p-12">
+      
+      <div className="p-6 md:p-12">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-2xl font-semibold flex items-center gap-2 mb-6"><FileText size={20} /> Documents</h1>
           <div className="relative mb-6">
@@ -47,7 +47,7 @@ export default function DocumentsPage() {
             </div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
