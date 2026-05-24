@@ -13,7 +13,7 @@ export default function TasksPage() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [view, setView] = useState<"grid"|"list">("grid");
-  const [filter, setFilter] = useState<"all"|"active"|"completed">("all");
+  const [spaceFilter, setSpaceFilter] = useState<string>("");  const [filter, setFilter] = useState<"all"|"active"|"completed">("all");
   const [marking, setMarking] = useState<string | null>(null);
   const [spaces, setSpaces] = useState<{_id:string,name:string}[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);  const [showCreate, setShowCreate] = useState(false);  const [editTask, setEditTask] = useState<Task | null>(null);  const [editTitle, setEditTitle] = useState("");  const [editDesc, setEditDesc] = useState(""); const [editDueDate, setEditDueDate] = useState("");  const [editSaving, setEditSaving] = useState(false);  const [newTitle, setNewTitle] = useState("");  const [newDesc, setNewDesc] = useState("");  const [newPriority, setNewPriority] = useState("medium");
@@ -22,7 +22,7 @@ export default function TasksPage() {
     setLoading(true);
     fetch("/api/tasks").then(r => r.json()).then(d => { if (d.success) setTasks(d.tasks); }).catch(e => setError(e.message)).finally(() => setLoading(false));
   };
-  useEffect(() => { fetchTasks(); fetch('/api/spaces').then(r=>r.json()).then(d=>{if(d.success)setSpaces(d.spaces)}); }, []);
+  useEffect(() => { const params = new URLSearchParams(window.location.search); const space = params.get("space"); if (space) setSpaceFilter(space); fetchTasks(); fetch('/api/spaces').then(r=>r.json()).then(d=>{if(d.success)setSpaces(d.spaces)}); }, []);
 
   const markDone = async (id: string) => { setMarking(id); await fetch("/api/tasks/"+id, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({status:"completed"}) }); setTasks(p => p.map(t => t._id===id ? {...t, status:"completed"} : t)); setMarking(null); };
   const markUndone = async (id: string) => { setMarking(id); await fetch("/api/tasks/"+id, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({status:"pending"}) }); setTasks(p => p.map(t => t._id===id ? {...t, status:"pending"} : t)); setMarking(null); };
@@ -30,13 +30,13 @@ export default function TasksPage() {
 
   if (error) return <div className="flex flex-col items-center justify-center h-full gap-4"><AlertTriangle size={40} className="text-yellow-500" /><p className="text-zinc-500 text-sm">{error}</p></div>;
 
-  const filtered = filter==="all" ? tasks : filter==="active" ? tasks.filter(t=>t.status!=="completed") : tasks.filter(t=>t.status==="completed");
+  const spaceFiltered = spaceFilter ? tasks.filter(t => t.spaceId === spaceFilter) : tasks;  const filtered = filter==="all" ? spaceFiltered : filter==="active" ? spaceFiltered.filter(t=>t.status!=="completed") : spaceFiltered.filter(t=>t.status==="completed");
 
   return (
     <div className="flex flex-col h-full p-6 md:p-8">
       {loading && <div className="fixed top-0 left-0 right-0 h-0.5 z-50"><div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-loading-bar" /></div>}
       <div className="flex items-center gap-4 mb-4">
-        <h1 className="text-2xl font-semibold flex items-center gap-2"><LayoutGrid size={20} /> Tasks</h1><button onClick={() => setShowCreate(true)} className="ml-4 px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg text-sm flex items-center gap-1 transition"><Plus size={14} /> New</button>
+        <h1 className="text-2xl font-semibold flex items-center gap-2"><LayoutGrid size={20} /> Tasks {spaceFilter && <span className="text-sm font-normal text-zinc-400">· {spaces.find(s=>s._id===spaceFilter)?.name || "Space"}</span>}</h1><button onClick={() => setShowCreate(true)} className="ml-4 px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg text-sm flex items-center gap-1 transition"><Plus size={14} /> New</button>
         <div className="flex items-center gap-1 ml-auto bg-gray-100 dark:bg-zinc-900 rounded-lg p-0.5">
           <button onClick={()=>setView("grid")} className={`p-1.5 rounded-md ${view==="grid"?"bg-white dark:bg-zinc-700 shadow-sm text-zinc-800 dark:text-white":"text-zinc-500"}`}><Grid3X3 size={15}/></button>
           <button onClick={()=>setView("list")} className={`p-1.5 rounded-md ${view==="list"?"bg-white dark:bg-zinc-700 shadow-sm text-zinc-800 dark:text-white":"text-zinc-500"}`}><List size={15}/></button>
