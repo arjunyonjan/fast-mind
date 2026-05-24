@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Bug, X, ChevronDown, Maximize2, Activity, Circle, Copy, Check, Brain } from "lucide-react";
+import { Bug, X, ChevronDown, Maximize2, Activity, Circle, Copy, Check, Brain, Wifi, WifiOff } from "lucide-react";
 
 interface LogEntry { time: string; type: "info"|"warn"|"error"|"api"; message: string; }
 interface ApiCall { id: number; time: string; method: string; url: string; status: number|"pending"|"error"; duration: number|null; preview: string; }
@@ -31,16 +31,42 @@ export default function DebugPanel() {
   const [resizing, setResizing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [preMinPos, setPreMinPos] = useState(saved?.preMinPos ?? { x: position.x, y: position.y });
+  const [copiedTraceId, setCopiedTraceId] = useState<number | null>(null);
+  const [hfOnline, setHfOnline] = useState<boolean | null>(null);
+  const [hfChecked, setHfChecked] = useState("");
 
   const panelRef = useRef<HTMLDivElement>(null);
   const offset = useRef({x:0,y:0});
   const dragPos = useRef({x:0,y:0});
   const resizeStart = useRef({x:0,y:0,w:0,h:0});
 
-  // Persist state
   useEffect(() => { saveState({ open, minimized, tab, position, size, preMinPos }); }, [open, minimized, tab, position, size, preMinPos]);
 
-  // Intercept fetch & console
+  // Ping HF status
+  useEffect(() => {
+    const checkHF = async () => {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 5000);
+        const r = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inputs: "ping" }),
+          signal: ctrl.signal,
+        });
+        clearTimeout(t);
+        setHfOnline(r.ok || r.status === 503);
+        setHfChecked(new Date().toLocaleTimeString());
+      } catch {
+        setHfOnline(false);
+        setHfChecked(new Date().toLocaleTimeString());
+      }
+    };
+    checkHF();
+    const interval = setInterval(checkHF, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     fetch("/api/debug").then(r=>r.json()).then(setEnvVars);
     const origLog=console.log, origWarn=console.warn, origErr=console.error;
@@ -103,7 +129,20 @@ export default function DebugPanel() {
     setCopied(true); setTimeout(()=>setCopied(false),2000);
   };
 
-  // Smooth drag using imperative DOM updates
+  const copyTrace = (t: AiTrace) => {
+    const text = `AI Trace ${t.time}
+Input: ${t.input}
+Source: ${t.source} (${t.duration}ms)
+Title: ${t.parsed.title}
+Description: ${t.parsed.description || "—"}
+Priority: ${t.parsed.priority}
+Logic Steps:
+${t.steps.map(s => "▸ "+s).join("\n")}`;
+    navigator.clipboard.writeText(text);
+    setCopiedTraceId(t.id);
+    setTimeout(()=>setCopiedTraceId(null),2000);
+  };
+
   const onMD = (e: React.MouseEvent) => {
     if (resizing) return;
     e.preventDefault();
@@ -159,13 +198,10 @@ export default function DebugPanel() {
     };
   }, [dragging, resizing]);
 
-  // Toggle minimize: save position before collapsing; when expanding, if last y was too low, use a smart default
   const toggleMinimize = () => {
     if (!minimized) {
-      // Saving current position before collapsing
       setPreMinPos({ x: position.x, y: position.y });
     } else {
-      // Restoring: if saved y is too close to bottom (within 100px), use a nice default position top-right
       const maxY = window.innerHeight - 100;
       if (preMinPos.y > maxY) {
         setPosition({ x: window.innerWidth - 420, y: 80 });
@@ -188,7 +224,15 @@ export default function DebugPanel() {
       className="fixed z-[9999] bg-zinc-900/95 backdrop-blur border border-zinc-700 rounded-xl shadow-2xl flex flex-col overflow-hidden text-xs font-mono transition-all duration-300"
     >
       <div onMouseDown={onMD} onDoubleClick={toggleMinimize} className="flex items-center justify-between px-3 py-2 bg-zinc-800 cursor-move shrink-0">
-        <span className="font-medium text-zinc-400 flex items-center gap-2"><Bug size={14}/>Debug</span>
+        <span className="font-medium text-zinc-400 flex items-center gap-2">
+          <Bug size={14}/>Debug
+          {hfOnline !== null && (
+            <span className={`flex items-center gap-1 text-[10px] ${hfOnline ? 'text-green-400' : 'text-red-400'}`} title={`HF ${hfOnline ? 'online' : 'offline'} · checked ${hfChecked}`}>
+              {hfOnline ? <Wifi size={10}/> : <WifiOff size={10}/>}
+              {!minimized && (hfOnline ? 'HF up' : 'HF down')}
+            </span>
+          )}
+        </span>
         <div className="flex items-center gap-1">
           <button onClick={toggleMinimize} className="text-zinc-500 hover:text-white">
             <ChevronDown size={14} className={`transition-transform duration-200 ${minimized ? "rotate-180" : ""}`} />
@@ -216,13 +260,20 @@ export default function DebugPanel() {
               <div className="text-zinc-600 text-center py-8">No AI traces yet. Send a chat message.</div>
             ) : (
               aiTraces.map(t => (
-                <div key={t.id} className="bg-zinc-800/50 rounded-lg px-3 py-2 select-text border border-zinc-700/50">
+                <div key={t.id} className="bg-zinc-800/50 rounded-lg px-3 py-2 select-text border border-zinc-700/50 relative group">
+                  <button 
+                    onClick={() => copyTrace(t)} 
+                    className="absolute top-2 right-2 p-1 rounded hover:bg-zinc-700 text-zinc-500 hover:text-white transition"
+                    title="Copy trace"
+                  >
+                    {copiedTraceId === t.id ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+                  </button>
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-zinc-500 text-[10px]">{t.time}</span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${t.source === "huggingface" ? "bg-purple-900/40 text-purple-300" : "bg-zinc-700 text-zinc-400"}`}>{t.source}</span>
                     <span className="text-zinc-600 text-[10px]">{t.duration}ms</span>
                   </div>
-                  <div className="text-zinc-500 text-[10px] mb-1.5 truncate">Input: <span className="text-zinc-400">"{t.input}"</span></div>
+                  <div className="text-zinc-500 text-[10px] mb-1.5 truncate pr-6">Input: <span className="text-zinc-400">"{t.input}"</span></div>
                   <div className="grid grid-cols-3 gap-1.5">
                     <div className="bg-zinc-900/50 rounded px-2 py-1">
                       <div className="text-zinc-600 text-[9px] uppercase tracking-wider mb-0.5">Title</div>
