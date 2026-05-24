@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 @keyframes slide-in {
   from {
@@ -51,3 +51,12 @@
 .prose table { width: 100%; border-collapse: collapse; margin-bottom: 1.25em; }
 .prose th, .prose td { border: 1px solid #e2e8f0; padding: 0.5em; text-align: left; }
 .prose th { background-color: #f8fafc; font-weight: 600; }
+
+@keyframes loading-bar {
+  0% { width: 0; margin-left: 0; }
+  50% { width: 60%; margin-left: 20%; }
+  100% { width: 0; margin-left: 100%; }
+}
+.animate-loading-bar {
+  animation: loading-bar 1.2s ease-in-out infinite;
+}

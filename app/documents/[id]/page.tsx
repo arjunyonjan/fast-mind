@@ -2,7 +2,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, FileText, Edit3, Trash2, Save, X } from "lucide-react";
+
+import { ArrowLeft, FileText, Edit3, Trash2, Save, X } from 'lucide-react';
+import TipTapEditor from '@/components/TipTapEditor';
 
 interface Doc { _id: string; title: string; content: string; updatedAt: string; }
 
@@ -82,7 +84,7 @@ export default function DocumentPage() {
       </div>
       <div className="max-w-3xl mx-auto px-4 py-8">
         {editing ? (
-          <textarea value={content} onChange={(e) => setContent(e.target.value)} className="w-full min-h-[60vh] bg-transparent border-none outline-none text-gray-700 text-lg resize-none leading-relaxed" placeholder="Start writing..." />
+          <TipTapEditor content={content} onChange={setContent} />
         ) : (
           <div className="prose prose-lg text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: doc.content }} />
         )}
