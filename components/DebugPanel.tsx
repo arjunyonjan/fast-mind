@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Bug, X, ChevronDown, Maximize2, Activity, Circle, Copy, Check, Brain } from "lucide-react";
 
 interface LogEntry { time: string; type: "info"|"warn"|"error"|"api"; message: string; }
@@ -30,15 +30,17 @@ export default function DebugPanel() {
   const [dragging, setDragging] = useState(false);
   const [resizing, setResizing] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [preMinPos, setPreMinPos] = useState({x: position.x, y: position.y});
+  const [preMinPos, setPreMinPos] = useState(saved?.preMinPos ?? { x: position.x, y: position.y });
 
   const panelRef = useRef<HTMLDivElement>(null);
   const offset = useRef({x:0,y:0});
   const dragPos = useRef({x:0,y:0});
   const resizeStart = useRef({x:0,y:0,w:0,h:0});
 
-  useEffect(() => { saveState({ open, minimized, tab, position, size }); }, [open, minimized, tab, position, size]);
+  // Persist state
+  useEffect(() => { saveState({ open, minimized, tab, position, size, preMinPos }); }, [open, minimized, tab, position, size, preMinPos]);
 
+  // Intercept fetch & console
   useEffect(() => {
     fetch("/api/debug").then(r=>r.json()).then(setEnvVars);
     const origLog=console.log, origWarn=console.warn, origErr=console.error;
@@ -53,7 +55,7 @@ export default function DebugPanel() {
       const call:ApiCall={id,time:new Date().toLocaleTimeString(),method,url:typeof url==="string"?url:url.toString(),status:"pending",duration:null,preview:""};
       setApiCalls(p=>[call,...p.slice(0,19)]);
       try{
-        const res=await origFetch(...args);
+        const res=await origFetch(...args as [input: RequestInfo | URL, init?: RequestInit]);
         const dur=Math.round(performance.now()-start),clone=res.clone();
         let preview="";try{preview=(await clone.text()).slice(0,120)}catch{}
         setApiCalls(p=>p.map(c=>c.id===id?{...c,status:res.status,duration:dur,preview}:c));
@@ -157,6 +159,23 @@ export default function DebugPanel() {
     };
   }, [dragging, resizing]);
 
+  // Toggle minimize: save position before collapsing; when expanding, if last y was too low, use a smart default
+  const toggleMinimize = () => {
+    if (!minimized) {
+      // Saving current position before collapsing
+      setPreMinPos({ x: position.x, y: position.y });
+    } else {
+      // Restoring: if saved y is too close to bottom (within 100px), use a nice default position top-right
+      const maxY = window.innerHeight - 100;
+      if (preMinPos.y > maxY) {
+        setPosition({ x: window.innerWidth - 420, y: 80 });
+      } else {
+        setPosition({ x: preMinPos.x, y: preMinPos.y });
+      }
+    }
+    setMinimized(!minimized);
+  };
+
   if(!open) return <button onClick={()=>setOpen(true)} className="fixed bottom-4 right-4 z-[9999] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 p-2 rounded-full shadow-lg"><Bug size={18}/></button>;
 
   const sc=(s:number|string)=>{if(s==="pending")return"text-yellow-400";if(s==="error")return"text-red-400";if(typeof s==="number"&&s>=400)return"text-red-400";if(typeof s==="number"&&s>=200)return"text-green-400";return"text-zinc-400"};
@@ -165,13 +184,15 @@ export default function DebugPanel() {
   return (
     <div
       ref={panelRef}
-      style={minimized ? { bottom:0, left:"50%", transform:"translateX(-50%)", width:size.w, height:40 } : { left:preMinPos.x || position.x, top:preMinPos.y || position.y, width:size.w, height:size.h }}
+      style={minimized ? { bottom:0, left:"50%", transform:"translateX(-50%)", width:size.w, height:40 } : { left:position.x, top:position.y, width:size.w, height:size.h }}
       className="fixed z-[9999] bg-zinc-900/95 backdrop-blur border border-zinc-700 rounded-xl shadow-2xl flex flex-col overflow-hidden text-xs font-mono transition-all duration-300"
     >
-      <div onMouseDown={onMD} onDoubleClick={()=>{ if(!minimized) setPreMinPos(position); setMinimized(!minimized); }} className="flex items-center justify-between px-3 py-2 bg-zinc-800 cursor-move shrink-0">
+      <div onMouseDown={onMD} onDoubleClick={toggleMinimize} className="flex items-center justify-between px-3 py-2 bg-zinc-800 cursor-move shrink-0">
         <span className="font-medium text-zinc-400 flex items-center gap-2"><Bug size={14}/>Debug</span>
         <div className="flex items-center gap-1">
-          <button onClick={()=>{ if(!minimized) setPreMinPos(position); setMinimized(!minimized); }} className="text-zinc-500 hover:text-white"><ChevronDown size={14} className={`transition ${minimized?"rotate-180":""}`}/></button>
+          <button onClick={toggleMinimize} className="text-zinc-500 hover:text-white">
+            <ChevronDown size={14} className={`transition-transform duration-200 ${minimized ? "rotate-180" : ""}`} />
+          </button>
           <button onClick={()=>setOpen(false)} className="text-zinc-500 hover:text-white"><X size={14}/></button>
         </div>
       </div>
