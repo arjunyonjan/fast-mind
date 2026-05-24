@@ -8,7 +8,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const db = await connectToDatabase();
     const doc = await db.collection("documents").findOne({ _id: new ObjectId(id) });
     if (!doc) return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
-    return NextResponse.json({ success: true, document: { _id: doc._id.toString(), title: doc.title, content: doc.content, updatedAt: doc.updatedAt?.toISOString?.() } });
+    return NextResponse.json({ success: true, document: { _id: doc._id.toString(), title: doc.title, content: typeof doc.content === "string" ? doc.content : "", updatedAt: doc.updatedAt?.toISOString?.() } });
   } catch (err: any) { return NextResponse.json({ success: false, error: err.message }, { status: 500 }); }
 }
 
@@ -19,7 +19,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const db = await connectToDatabase();
     const result = await db.collection("documents").findOneAndUpdate({ _id: new ObjectId(id) }, { $set: { title, content, updatedAt: new Date() } }, { returnDocument: "after" });
     if (!result) return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
-    return NextResponse.json({ success: true, document: { _id: result._id.toString(), title: result.title, content: result.content, updatedAt: result.updatedAt?.toISOString?.() } });
+    return NextResponse.json({ success: true, document: { _id: result._id.toString(), title: result.title, content: typeof result.content === "string" ? result.content : "", updatedAt: result.updatedAt?.toISOString?.() } });
   } catch (err: any) { return NextResponse.json({ success: false, error: err.message }, { status: 500 }); }
 }
 
