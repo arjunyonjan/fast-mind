@@ -60,3 +60,5 @@
 .animate-loading-bar {
   animation: loading-bar 1.2s ease-in-out infinite;
 }
+@keyframes glow { 0%,100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+.animate-glow { animation: glow 1.5s ease-in-out infinite; }
