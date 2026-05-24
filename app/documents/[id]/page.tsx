@@ -86,7 +86,7 @@ export default function DocumentPage() {
         ) : (
           <div className="prose prose-lg text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: doc.content }} />
         )}
-        <p className="text-xs text-gray-400 mt-8">Updated {new Date(doc.updatedAt).toLocaleString()}</p>
+        <p className="text-xs text-gray-400 mt-8">Updated {new Date(doc.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
       </div>
     </div>
   );
