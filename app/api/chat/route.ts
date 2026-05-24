@@ -3,81 +3,56 @@ import { connectToDatabase } from "@/lib/mongodb";
 
 function parseTask(message: string) {
   const msg = message.trim();
-  
-  // Detect priority from keywords
+  const steps: string[] = [];
   let priority = "medium";
-  if (/urgent|asap|critical|immediately|now|today/i.test(msg)) priority = "high";
-  if (/whenever|later|someday|low prio|optional/i.test(msg)) priority = "low";
-
-  // Split into title + description
-  const sentenceBreak = msg.match(/[.!?\n]/);
+  if (/urgent|asap|critical|immediately|now|today|pray|bless|important/i.test(msg)) { priority = "high"; steps.push("🔍 Keyword → high"); }
+  else if (/whenever|later|someday|optional|maybe/i.test(msg)) { priority = "low"; steps.push("🔍 Keyword → low"); }
+  else { steps.push("🔍 Default medium"); }
   let title = msg;
   let description = "";
-
-  if (sentenceBreak && sentenceBreak.index && sentenceBreak.index > 10) {
-    title = msg.slice(0, sentenceBreak.index + 1).trim();
-    description = msg.slice(sentenceBreak.index + 1).trim();
-  }
-
-  // Cap title length
-  if (title.length > 80) {
-    description = title.slice(80) + " " + description;
-    title = title.slice(0, 80);
-  }
-
-  return { title: title || "Untitled task", description: description || "", priority, status: "pending" };
+  const cleaned = msg.replace(/^(please\s+)?(add\s+(a\s+)?task\s+(to\s+)?|create\s+(a\s+)?task\s+(to\s+)?|remind\s+me\s+to\s+|make\s+(a\s+)?(note|task)\s+(to\s+)?)/i, "").trim();
+  if (cleaned && cleaned !== msg) { title = cleaned; steps.push("🧹 Stripped command prefix"); }
+  else { steps.push("🧹 No prefix"); }
+  const breakIdx = title.search(/[.!?\n]/);
+  if (breakIdx > 10 && breakIdx < title.length - 5) { description = title.slice(breakIdx + 1).trim(); title = title.slice(0, breakIdx).trim(); steps.push("✂️ Split at punctuation"); }
+  title = title.charAt(0).toUpperCase() + title.slice(1);
+  if (title.length > 70) { description = title.slice(70) + " " + description; title = title.slice(0, 70); steps.push("📏 Capped at 70"); }
+  steps.push("💾 Done");
+  return { title: title || "Untitled", description: description.trim(), priority, status: "pending", steps };
 }
 
 export async function POST(req: Request) {
   try {
     const { message } = await req.json();
-    console.log("📥 Chat request:", message?.slice(0, 50));
-
-    const hfToken = process.env.HF_TOKEN;
     let task = parseTask(message);
-
-    // Try HuggingFace if token exists, with fast timeout
+    let source = "local";
+    const hfToken = process.env.HF_TOKEN;
     if (hfToken) {
       try {
-        console.log("🤖 Trying HuggingFace...");
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 4000);
-        const res = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${hfToken}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            inputs: `Extract a task from this text. Output ONLY valid JSON with keys: title, description, priority (high/medium/low). Text: "${message}"`,
-          }),
-          signal: controller.signal,
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 4000);
+        const r = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3", {
+          method: "POST", headers: { Authorization: "Bearer " + hfToken, "Content-Type": "application/json" },
+          body: JSON.stringify({ inputs: 'Extract task from: "' + message + '". Return ONLY JSON: {"title":"short name","description":"details","priority":"high|medium|low"}' }),
+          signal: ctrl.signal,
         });
-        clearTimeout(timeout);
-        if (res.ok) {
-          const json = await res.json();
-          const text = json[0]?.generated_text || "";
-          const match = text.match(/\{[\s\S]*\}/);
-          if (match) {
-            const parsed = JSON.parse(match[0]);
-            task = { title: parsed.title || task.title, description: parsed.description || task.description, priority: parsed.priority || task.priority, status: "pending" };
-            console.log("✅ HF parsed:", task.title);
+        clearTimeout(t);
+        if (r.ok) {
+          const j = await r.json();
+          const txt = j[0]?.generated_text || "";
+          const m = txt.match(/\{[\s\S]*\}/);
+          if (m) {
+            const p = JSON.parse(m[0]);
+            task = { title: p.title || task.title, description: p.description || task.description, priority: p.priority || task.priority, status: "pending", steps: [...task.steps, "🤖 HF merged"] };
+            source = "huggingface";
           }
         }
-      } catch (e: any) {
-        console.warn("⚠️ HF failed, using local parser:", e.message);
-      }
+      } catch (e: any) { task.steps.push("⚠️ HF failed: " + e.message); }
     }
-
-    console.log("💾 Saving task:", task.title);
     const db = await connectToDatabase();
-    const result = await db.collection("tasks").insertOne({
-      ...task,
-      createdAt: new Date(),
-      source: "chat",
-    });
-    console.log("✅ Task saved:", result.insertedId);
-
-    return NextResponse.json({ reply: `📝 Task: **${task.title}**\n📋 ${task.description || "No description"}\n🔴 Priority: ${task.priority}` });
+    await db.collection("tasks").insertOne({ ...task, createdAt: new Date(), source });
+    return NextResponse.json({ reply: "📝 **" + task.title + "**\n📋 " + (task.description || "No description") + "\n🔴 Priority: " + task.priority, steps: task.steps });
   } catch (err: any) {
-    console.error("❌ Chat error:", err.message);
-    return NextResponse.json({ reply: `⚠️ Error: ${err.message}` }, { status: 500 });
+    return NextResponse.json({ reply: "⚠️ " + err.message, steps: ["❌ " + err.message] }, { status: 500 });
   }
 }

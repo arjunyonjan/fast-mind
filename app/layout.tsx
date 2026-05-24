@@ -1,3 +1,4 @@
+import ThemeProvider from '@/components/ThemeProvider';
 import DebugPanelWrapper from '@/components/DebugPanelWrapper';
 import type { Metadata } from 'next';
 import './globals.css';
@@ -9,11 +10,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
+        <ThemeProvider>
         <ToastProvider>
           <main>{children}</main>
         </ToastProvider>
         <DebugPanelWrapper />
-      </body>
+              </ThemeProvider>`n</body>
     </html>
   );
 }
