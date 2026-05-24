@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Sparkles, Send, FileText, User, Bot } from 'lucide-react';
+import { Sparkles, Send, FileText, User, Bot, WifiOff } from 'lucide-react';
 
 interface Document { _id: string; title: string; content: string; updatedAt: string; }
 
@@ -12,7 +12,14 @@ export default function Home() {
   const [input, setInput] = useState('');
   const [taskCount, setTaskCount] = useState(0);
   const [aiLoading, setAiLoading] = useState(false);
+  const [hfOnline, setHfOnline] = useState<boolean | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ inputs: 'ping' })
+    }).then(r => setHfOnline(r.ok || r.status === 503)).catch(() => setHfOnline(false));
+  }, []);
 
   useEffect(() => {
     fetch('/api/tasks').then(r=>r.json()).then(d=>{if(d.success)setTaskCount(d.tasks.filter((t:any)=>t.status!=="completed").length)});
@@ -23,7 +30,7 @@ export default function Home() {
   useEffect(() => { scrollToBottom(); }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim() || aiLoading) return;
+    if (!input.trim() || aiLoading || hfOnline === false) return;
     const userMsg = { id: Date.now().toString(), role: 'user' as const, content: input };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
@@ -37,44 +44,34 @@ export default function Home() {
     finally { setAiLoading(false); }
   };
 
+  const hfOffline = hfOnline === false;
+
   return (
     <div className="flex flex-col h-full bg-gradient-to-br from-slate-50 via-white to-cyan-50/30 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
-      {loading && (
-        <div className="fixed top-0 left-0 right-0 h-0.5 z-50">
-          <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-loading-bar" />
-        </div>
-      )}
+      {loading && <div className="fixed top-0 left-0 right-0 h-0.5 z-50"><div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-loading-bar" /></div>}
 
       {messages.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center px-4">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 shadow-lg mb-4">
-              <span className="text-3xl">⚡</span>
-            </div>
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 shadow-lg mb-4"><span className="text-3xl">⚡</span></div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">FastMind</h1>
             <p className="text-gray-400 dark:text-zinc-500 mt-1 text-sm">Notion-grade editor with rich formatting</p>
             <Link href="/documents/new" className="inline-block mt-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition">+ New Document</Link>
           </div>
-
           <div className="w-full max-w-2xl">
+            {hfOffline && <div className="flex items-center gap-1 text-xs text-red-400 mb-2"><WifiOff size={12}/> AI offline — HuggingFace unreachable</div>}
             <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-800 overflow-hidden">
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                placeholder="Ask AI to create tasks, notes, or run commands..."
-                className="w-full p-5 text-gray-700 dark:text-zinc-300 resize-none border-none outline-none text-base bg-white dark:bg-zinc-900"
-                rows={3}
-              />
+              <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                placeholder={hfOffline ? "AI is offline — check back soon" : "Ask AI to create tasks, notes, or run commands..."}
+                className="w-full p-5 text-gray-700 dark:text-zinc-300 resize-none border-none outline-none text-base bg-white dark:bg-zinc-900" rows={3} />
               <div className="flex items-center justify-between px-4 py-3 bg-gray-50/50 dark:bg-zinc-800/50">
                 <div className="text-xs text-gray-400 dark:text-zinc-500">Press Enter to send, Shift+Enter for new line</div>
-                <button onClick={handleSend} disabled={aiLoading || !input.trim()} className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium hover:shadow-md disabled:opacity-50 transition">
+                <button onClick={handleSend} disabled={aiLoading || !input.trim() || hfOffline} className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium hover:shadow-md disabled:opacity-50 transition">
                   <Send className="w-4 h-4" /> Send
                 </button>
               </div>
             </div>
           </div>
-
           {documents.length > 0 && (
             <div className="w-full max-w-2xl mt-12">
               <div className="flex items-center justify-between mb-4">
@@ -110,26 +107,16 @@ export default function Home() {
             <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {msg.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shrink-0">
-                      <Bot className="w-4 h-4 text-white" />
-                    </div>
-                  )}
+                  {msg.role === 'assistant' && <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shrink-0"><Bot className="w-4 h-4 text-white" /></div>}
                   <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${msg.role === 'user' ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white' : 'bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-800 dark:text-zinc-200'}`}>
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                   </div>
-                  {msg.role === 'user' && (
-                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center shrink-0">
-                      <User className="w-4 h-4 text-gray-600 dark:text-zinc-300" />
-                    </div>
-                  )}
+                  {msg.role === 'user' && <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center shrink-0"><User className="w-4 h-4 text-gray-600 dark:text-zinc-300" /></div>}
                 </div>
               ))}
               {aiLoading && (
                 <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
-                    <Bot className="w-4 h-4 text-white" />
-                  </div>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center"><Bot className="w-4 h-4 text-white" /></div>
                   <div className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl px-4 py-3">
                     <div className="flex gap-1">
                       <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
@@ -144,20 +131,9 @@ export default function Home() {
           </div>
           <div className="border-t bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm p-4 shrink-0">
             <div className="max-w-3xl mx-auto flex gap-3">
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                placeholder="Send a message..."
-                className="flex-1 p-3 rounded-xl resize-none border-none outline-none bg-gray-50 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300"
-                rows={1}
-                style={{ minHeight: '44px', maxHeight: '120px' }}
-              />
-              <button
-                onClick={handleSend}
-                disabled={aiLoading || !input.trim()}
-                className="px-5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium disabled:opacity-50"
-              >
+              <textarea value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                placeholder="Send a message..." className="flex-1 p-3 rounded-xl resize-none border-none outline-none bg-gray-50 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300" rows={1} style={{ minHeight: '44px', maxHeight: '120px' }} />
+              <button onClick={handleSend} disabled={aiLoading || !input.trim() || hfOffline} className="px-5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium disabled:opacity-50">
                 <Send className="w-5 h-5" />
               </button>
             </div>
