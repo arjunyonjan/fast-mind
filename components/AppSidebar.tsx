@@ -86,7 +86,7 @@ export default function AppSidebar() {
 
       {!collapsed && (
         <a href="https://platform.deepseek.com/usage" target="_blank" className="block px-3 py-2 text-xs text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition border-t border-gray-200 dark:border-zinc-800">
-          📊 DeepSeek Usage →
+          <span className="flex items-center gap-1.5"><DeepSeekIcon size={14} className="text-[#4D6BFE]" /> DeepSeek Usage →</span>
         </a>
       )}
 

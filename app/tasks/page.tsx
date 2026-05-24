@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { LayoutGrid, AlertTriangle, Copy, Check, List, Grid3X3, Trash2 } from "lucide-react";
+import { LayoutGrid, AlertTriangle, Copy, Check, List, Grid3X3, Trash2, Plus, Edit3 } from "lucide-react";
 
 interface Task {
   spaceId?: string;
@@ -16,7 +16,7 @@ export default function TasksPage() {
   const [filter, setFilter] = useState<"all"|"active"|"completed">("all");
   const [marking, setMarking] = useState<string | null>(null);
   const [spaces, setSpaces] = useState<{_id:string,name:string}[]>([]);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);  const [showCreate, setShowCreate] = useState(false);  const [editTask, setEditTask] = useState<Task | null>(null);  const [editTitle, setEditTitle] = useState("");  const [editDesc, setEditDesc] = useState("");  const [editSaving, setEditSaving] = useState(false);  const [newTitle, setNewTitle] = useState("");  const [newDesc, setNewDesc] = useState("");  const [newPriority, setNewPriority] = useState("medium");
 
   const fetchTasks = () => {
     setLoading(true);
@@ -26,17 +26,17 @@ export default function TasksPage() {
 
   const markDone = async (id: string) => { setMarking(id); await fetch("/api/tasks/"+id, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({status:"completed"}) }); setTasks(p => p.map(t => t._id===id ? {...t, status:"completed"} : t)); setMarking(null); };
   const markUndone = async (id: string) => { setMarking(id); await fetch("/api/tasks/"+id, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({status:"pending"}) }); setTasks(p => p.map(t => t._id===id ? {...t, status:"pending"} : t)); setMarking(null); };
-  const deleteTask = async (id: string) => { await fetch("/api/tasks/"+id, { method:"DELETE" }); setTasks(p => p.filter(t => t._id !== id)); };
+  const createTask = async () => { if (!newTitle.trim()) return; await fetch("/api/tasks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: newTitle, description: newDesc, priority: newPriority, status: "pending", source: "manual" }) }); setNewTitle(""); setNewDesc(""); setNewPriority("medium"); setShowCreate(false); fetchTasks(); };  const deleteTask = async (id: string) => { await fetch("/api/tasks/"+id, { method:"DELETE" }); setTasks(p => p.filter(t => t._id !== id)); };
 
   if (error) return <div className="flex flex-col items-center justify-center h-full gap-4"><AlertTriangle size={40} className="text-yellow-500" /><p className="text-zinc-500 text-sm">{error}</p></div>;
 
   const filtered = filter==="all" ? tasks : filter==="active" ? tasks.filter(t=>t.status!=="completed") : tasks.filter(t=>t.status==="completed");
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-6 md:p-8">
       {loading && <div className="fixed top-0 left-0 right-0 h-0.5 z-50"><div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-loading-bar" /></div>}
       <div className="flex items-center gap-4 mb-4">
-        <h1 className="text-2xl font-semibold flex items-center gap-2"><LayoutGrid size={20} /> Tasks</h1>
+        <h1 className="text-2xl font-semibold flex items-center gap-2"><LayoutGrid size={20} /> Tasks</h1><button onClick={() => setShowCreate(true)} className="ml-4 px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg text-sm flex items-center gap-1 transition"><Plus size={14} /> New</button>
         <div className="flex items-center gap-1 ml-auto bg-gray-100 dark:bg-zinc-900 rounded-lg p-0.5">
           <button onClick={()=>setView("grid")} className={`p-1.5 rounded-md ${view==="grid"?"bg-white dark:bg-zinc-700 shadow-sm text-zinc-800 dark:text-white":"text-zinc-500"}`}><Grid3X3 size={15}/></button>
           <button onClick={()=>setView("list")} className={`p-1.5 rounded-md ${view==="list"?"bg-white dark:bg-zinc-700 shadow-sm text-zinc-800 dark:text-white":"text-zinc-500"}`}><List size={15}/></button>
@@ -46,10 +46,10 @@ export default function TasksPage() {
         {(["all","active","completed"] as const).map(f=>(<button key={f} onClick={()=>setFilter(f)} className={`px-3 py-1 text-xs rounded-full capitalize ${filter===f?"bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-white":"bg-gray-100 dark:bg-zinc-900 text-zinc-500"}`}>{f} <span className="ml-1 text-zinc-400">({f==="all"?tasks.length:f==="active"?tasks.filter(t=>t.status!=="completed").length:tasks.filter(t=>t.status==="completed").length})</span></button>))}
       </div>
       {filtered.length===0 ? <p className="text-zinc-500 text-center py-16">No {filter} tasks.</p> : (
-        <div className={view==="grid"?"grid gap-4 sm:grid-cols-2 lg:grid-cols-3":"flex flex-col gap-2"}>
-          {filtered.map(task=>(<div key={task._id} className={`bg-gray-50 dark:bg-zinc-900 border rounded-xl p-4 flex transition ${task.status==="completed"?"border-gray-100 dark:border-zinc-800 opacity-60":"border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600"} ${view==="list"?"flex-row items-center gap-4":"flex-col"}`}>
+        <div className={view==="grid"?"grid gap-5 sm:grid-cols-2 lg:grid-cols-3":"flex flex-col gap-2"}>
+          {filtered.map(task=>(<div key={task._id} className={`bg-gray-50 dark:bg-zinc-900 border rounded-xl p-5 flex transition ${task.status==="completed"?"border-gray-100 dark:border-zinc-800 opacity-60":"border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600"} ${view==="list"?"flex-row items-center gap-4":"flex-col"}`}>
             <div className={`flex items-start justify-between gap-2 ${view==="list"?"flex-1 min-w-0":"mb-2"}`}>
-              <h2 className={`font-medium text-zinc-800 dark:text-zinc-200 truncate ${task.status==="completed"?"line-through text-zinc-400":""} ${view==="list"?"flex-1":""}`}>{task.title}</h2>
+              <h2 onClick={() => { setEditTask(task); setEditTitle(task.title); setEditDesc(task.description || ""); }} className={`cursor-pointer hover:text-cyan-500 transition font-medium text-zinc-800 dark:text-zinc-200 truncate group ${task.status==="completed"?"line-through text-zinc-400":""} ${view==="list"?"flex-1":""}`}>{task.title}<Edit3 size={12} className="inline-block ml-1.5 text-cyan-400 shrink-0 opacity-0 group-hover:opacity-40 transition" /></h2>
               <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${task.priority==="high"?"bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300":task.priority==="medium"?"bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-300":"bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300"}`}>{task.priority}</span>              {task.spaceId && <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 shrink-0 ml-1">{spaces.find(s=>s._id===task.spaceId)?.name || "Space"}</span>}
             </div>
             {view==="grid" && task.description && <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">{task.description}</p>}
@@ -64,7 +64,7 @@ export default function TasksPage() {
         </div>
       )}
 
-      {deleteId && (
+      {editTask && (<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setEditTask(null)}><div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 p-6 w-[36rem] max-h-[90vh]" onClick={e => e.stopPropagation()}><h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 mb-4">Edit Task</h3><input value={editTitle} onChange={e => setEditTitle(e.target.value)} className="w-full bg-gray-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-800 dark:text-zinc-200 outline-none mb-3" placeholder="Title" /><textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} className="w-full bg-gray-50 dark:bg-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 outline-none resize-none mb-4 flex-1" rows={6} placeholder="Add a description..." /><div className="flex gap-2 justify-end"><button onClick={() => setEditTask(null)} className="px-4 py-2 text-sm rounded-lg bg-gray-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">Cancel</button><button onClick={async () => { setEditSaving(true); await fetch("/api/tasks/" + editTask._id, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: editTitle, description: editDesc }) }); setEditTask(null); setEditSaving(false); fetchTasks(); }} disabled={editSaving} className="px-4 py-2 text-sm rounded-lg bg-cyan-500 text-white disabled:opacity-50 flex items-center gap-1">{editSaving ? <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : null}{editSaving ? "Saving..." : "Save"}</button></div></div></div>)}{deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={()=>setDeleteId(null)}>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 p-6 w-80 text-center" onClick={e=>e.stopPropagation()}>
             <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4"><Trash2 size={20} className="text-red-500"/></div>
