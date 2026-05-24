@@ -46,7 +46,7 @@ export default function AppSidebar() {
   return (
     <>
       {mobileOpen && <div className="fixed inset-0 bg-black/50 z-40 sm:hidden" onClick={() => setMobileOpen(false)} />}
-      <aside className={`border-r border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900/50 flex flex-col shrink-0 transition-all duration-300 select-text max-sm:fixed max-sm:left-0 max-sm:top-0 max-sm:h-full max-sm:z-50 ${mobileOpen ? "max-sm:w-56" : "max-sm:w-0 max-sm:overflow-hidden"} ${collapsed ? "w-16" : "w-56"}`}>
+      <aside className={`border-r border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950 flex flex-col shrink-0 transition-all duration-300 select-text max-sm:fixed max-sm:left-0 max-sm:top-0 max-sm:h-full max-sm:z-50 ${mobileOpen ? "max-sm:w-56" : "max-sm:w-0 max-sm:overflow-hidden"} ${collapsed ? "w-16" : "w-56"}`}>
         <div className="flex items-center gap-2 px-3 py-4 mb-4">
           <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shrink-0"><Zap size={14} className="text-white" /></div>
           {!collapsed && <span className="font-bold text-sm uppercase text-zinc-700 dark:text-zinc-300 truncate">FastMind</span>}
