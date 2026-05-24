@@ -108,7 +108,7 @@ export default function DebugPanel() {
               },
               source: dur < 100 ? "local" : "huggingface",
               duration: dur,
-              steps: json.steps || []
+              steps: (Array.isArray(json.steps) ? json.steps : (json.steps ? [json.steps] : []))
             }, ...p.slice(0, 9)]);
           } catch {}
         }
@@ -137,7 +137,7 @@ Title: ${t.parsed.title}
 Description: ${t.parsed.description || "—"}
 Priority: ${t.parsed.priority}
 Logic Steps:
-${t.steps.map(s => "▸ "+s).join("\n")}`;
+${(t.steps || []).map(s => "▸ "+s).join("\n")}`;
     navigator.clipboard.writeText(text);
     setCopiedTraceId(t.id);
     setTimeout(()=>setCopiedTraceId(null),2000);
@@ -291,7 +291,7 @@ ${t.steps.map(s => "▸ "+s).join("\n")}`;
                   {t.steps.length > 0 && (
                     <div className="mt-2 pt-2 border-t border-zinc-700/50">
                       <div className="text-zinc-600 text-[9px] uppercase tracking-wider mb-1">🧠 Logic Trace</div>
-                      {t.steps.map((s,i) => (<div key={i} className="text-zinc-500 text-[9px] flex items-start gap-1 leading-relaxed"><span className="text-zinc-700 shrink-0">▸</span> {s}</div>))}
+                      {(t.steps || []).map((s,i) => (<div key={i} className="text-zinc-500 text-[9px] flex items-start gap-1 leading-relaxed"><span className="text-zinc-700 shrink-0">▸</span> {s}</div>))}
                     </div>
                   )}
                 </div>
