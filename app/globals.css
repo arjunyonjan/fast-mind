@@ -64,3 +64,13 @@
 .animate-glow { animation: glow 1.5s ease-in-out infinite; }
 
 button, a, [role='button'] { cursor: pointer; }
+
+@keyframes glow-brain {
+  0%, 100% { box-shadow: 0 0 8px rgba(6,182,212,0.3), 0 0 20px rgba(6,182,212,0.1); }
+  50% { box-shadow: 0 0 16px rgba(6,182,212,0.6), 0 0 40px rgba(6,182,212,0.3); }
+}
+.animate-glow-brain {
+  animation: glow-brain 2s ease-in-out infinite;
+  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+}
+@keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 4px rgba(6,182,212,0.4), 0 0 12px rgba(6,182,212,0.2); transform: scale(1); } 15% { transform: scale(1.12); } 30% { transform: scale(1); } 45% { transform: scale(1.08); } 60% { transform: scale(1); } 100% { box-shadow: 0 0 4px rgba(6,182,212,0.4), 0 0 12px rgba(6,182,212,0.2); transform: scale(1); } 50% { box-shadow: 0 0 14px rgba(6,182,212,0.8), 0 0 32px rgba(6,182,212,0.5); } }.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }

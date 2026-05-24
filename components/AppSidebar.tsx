@@ -36,7 +36,7 @@ export default function AppSidebar() {
     }`;
 
   return (
-    <aside className={`border-r border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900/50 flex flex-col shrink-0 transition-all duration-300 select-text ${collapsed ? "w-16" : "w-56"}`}>
+    <aside className={`border-r border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900/50 flex flex-col shrink-0 transition-all duration-300 max-sm:w-0 max-sm:overflow-hidden select-text ${collapsed ? "w-16" : "w-56"}`}>
       <div className="flex items-center gap-2 px-3 py-4 mb-4">
         <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shrink-0"><Zap size={14} className="text-white" /></div>
         {!collapsed && <span className="font-bold text-sm uppercase text-zinc-700 dark:text-zinc-300 truncate">FastMind</span>}
