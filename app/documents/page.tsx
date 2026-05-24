@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FileText, Search, Plus } from "lucide-react";
+import { FileText, Search, Plus, RefreshCw } from "lucide-react";
 
 interface Doc { _id: string; title: string; content: string; updatedAt: string; }
 
@@ -22,7 +22,7 @@ export default function DocumentsPage() {
       {loading && <div className="fixed top-0 left-0 right-0 h-0.5 z-50"><div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-loading-bar" /></div>}
       <div className="max-w-4xl mx-auto w-full p-6 md:p-12">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold flex items-center gap-2"><FileText size={20} /> Documents</h1>
+          <h1 className="text-2xl font-semibold flex items-center gap-2"><FileText size={20} /> Documents<button onClick={() => { setLoading(true); setReady(false); fetch("/api/documents").then(r => r.json()).then(data => { if (data.success) setDocs(data.documents); }).finally(() => { setLoading(false); setReady(true); }); }} className="ml-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-zinc-400" title="Refresh"><RefreshCw size={14} /></button></h1>
           <Link href="/documents/new" className="flex items-center gap-1 px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm hover:bg-cyan-600 transition"><Plus size={16} /> New</Link>
         </div>
         <div className="relative mb-6">
