@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { LayoutGrid, AlertTriangle, Copy, Check, List, Grid3X3, Trash2 } from "lucide-react";
 
 interface Task {
+  spaceId?: string;
   _id: string; title: string; description?: string; priority: string; status: string; source: string; createdAt: string;
 }
 
@@ -14,13 +15,14 @@ export default function TasksPage() {
   const [view, setView] = useState<"grid"|"list">("grid");
   const [filter, setFilter] = useState<"all"|"active"|"completed">("all");
   const [marking, setMarking] = useState<string | null>(null);
+  const [spaces, setSpaces] = useState<{_id:string,name:string}[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const fetchTasks = () => {
     setLoading(true);
     fetch("/api/tasks").then(r => r.json()).then(d => { if (d.success) setTasks(d.tasks); }).catch(e => setError(e.message)).finally(() => setLoading(false));
   };
-  useEffect(() => { fetchTasks(); }, []);
+  useEffect(() => { fetchTasks(); fetch('/api/spaces').then(r=>r.json()).then(d=>{if(d.success)setSpaces(d.spaces)}); }, []);
 
   const markDone = async (id: string) => { setMarking(id); await fetch("/api/tasks/"+id, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({status:"completed"}) }); setTasks(p => p.map(t => t._id===id ? {...t, status:"completed"} : t)); setMarking(null); };
   const markUndone = async (id: string) => { setMarking(id); await fetch("/api/tasks/"+id, { method:"PATCH", headers:{"Content-Type":"application/json"}, body:JSON.stringify({status:"pending"}) }); setTasks(p => p.map(t => t._id===id ? {...t, status:"pending"} : t)); setMarking(null); };
@@ -48,7 +50,7 @@ export default function TasksPage() {
           {filtered.map(task=>(<div key={task._id} className={`bg-gray-50 dark:bg-zinc-900 border rounded-xl p-4 flex transition ${task.status==="completed"?"border-gray-100 dark:border-zinc-800 opacity-60":"border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600"} ${view==="list"?"flex-row items-center gap-4":"flex-col"}`}>
             <div className={`flex items-start justify-between gap-2 ${view==="list"?"flex-1 min-w-0":"mb-2"}`}>
               <h2 className={`font-medium text-zinc-800 dark:text-zinc-200 truncate ${task.status==="completed"?"line-through text-zinc-400":""} ${view==="list"?"flex-1":""}`}>{task.title}</h2>
-              <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${task.priority==="high"?"bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300":task.priority==="medium"?"bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-300":"bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300"}`}>{task.priority}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${task.priority==="high"?"bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300":task.priority==="medium"?"bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-300":"bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300"}`}>{task.priority}</span>              {task.spaceId && <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 shrink-0 ml-1">{spaces.find(s=>s._id===task.spaceId)?.name || "Space"}</span>}
             </div>
             {view==="grid" && task.description && <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">{task.description}</p>}
             <div className={`flex items-center justify-between ${view==="grid"?"mt-auto pt-3 border-t border-gray-200 dark:border-zinc-800":""} text-xs text-zinc-400 dark:text-zinc-500`}>
