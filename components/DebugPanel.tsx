@@ -53,7 +53,7 @@ export default function DebugPanel() {
       const call:ApiCall={id,time:new Date().toLocaleTimeString(),method,url:typeof url==="string"?url:url.toString(),status:"pending",duration:null,preview:""};
       setApiCalls(p=>[call,...p.slice(0,19)]);
       try{
-        const res=await origFetch(...args);
+        const res=await origFetch(...args as [input: RequestInfo | URL, init?: RequestInit]);
         const dur=Math.round(performance.now()-start),clone=res.clone();
         let preview="";try{preview=(await clone.text()).slice(0,120)}catch{}
         setApiCalls(p=>p.map(c=>c.id===id?{...c,status:res.status,duration:dur,preview}:c));
