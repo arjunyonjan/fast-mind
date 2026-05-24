@@ -1,4 +1,5 @@
 import ThemeProvider from '@/components/ThemeProvider';
+import BrainPanel from '@/components/BrainPanel';
 import DebugPanelWrapper from '@/components/DebugPanelWrapper';
 import AppSidebar from '@/components/AppSidebar';
 import type { Metadata } from 'next';
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <main className="flex-1 overflow-y-auto">{children}</main>
             </div>
           </ToastProvider>
+          <BrainPanel />
           <DebugPanelWrapper />
         </ThemeProvider>
       </body>
