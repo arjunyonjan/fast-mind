@@ -1,6 +1,24 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Brain, Droplets, X, Info, Heart, Activity, Sun, Users, BookOpen, Wind } from "lucide-react";
+import { Brain, Droplets, X, Info, Heart, Activity, Sun, Users, BookOpen, Wind, ChevronDown } from "lucide-react";
+
+function CollapsibleCard({ id, title, icon, iconBg, collapsed, onToggle, children, infoAction }: { id: string; title: string; icon: React.ReactNode; iconBg: string; collapsed: boolean; onToggle: () => void; children: React.ReactNode; infoAction?: () => void }) {
+  return (
+    <div className="bg-zinc-800 rounded-xl p-3">
+      <div className="flex items-center gap-3 cursor-pointer" onClick={onToggle}>
+        {icon && <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>{icon}</div>}
+        <div className="flex-1 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="text-zinc-500 text-[13px] uppercase">{title}</div>
+            {infoAction && <button onClick={(e) => { e.stopPropagation(); infoAction(); }} className="text-cyan-400 hover:text-cyan-300"><Info size={10} /></button>}
+          </div>
+          <ChevronDown size={16} className={`text-zinc-500 transition-transform ${collapsed ? "" : "rotate-180"}`} />
+        </div>
+      </div>
+      {!collapsed && <div className="mt-3">{children}</div>}
+    </div>
+  );
+}
 
 export default function BrainPanel() {
   const [open, setOpen] = useState(false);
@@ -29,6 +47,7 @@ export default function BrainPanel() {
   const [simHour, setSimHour] = useState<number | null>(null);
   const [isLive, setIsLive] = useState(true);
   const simHourRef = useRef<number | null>(null);
+  const [collapsedCards, setCollapsedCards] = useState<string[]>(() => { try { const s = localStorage.getItem("brain-collapsed"); return s ? JSON.parse(s) : []; } catch { return []; } });
 
   useEffect(() => { simHourRef.current = simHour; }, [simHour]);
 
@@ -40,6 +59,7 @@ export default function BrainPanel() {
   const toggleSocial = () => { const v = !social; setSocial(v); localStorage.setItem("brain-social", String(v)); setInitialized(true); };
   const toggleLearning = () => { const v = !learning; setLearning(v); localStorage.setItem("brain-learning", String(v)); setInitialized(true); };
   const toggleBreathwork = () => { const v = !breathwork; setBreathwork(v); localStorage.setItem("brain-breathwork", String(v)); setInitialized(true); };
+  const toggleCard = (id: string) => { setCollapsedCards(prev => { const next = prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]; localStorage.setItem("brain-collapsed", JSON.stringify(next)); return next; }); };
   const logExercise = (ex: string) => { setExerciseLoading(ex); setTimeout(() => { const log = [...exerciseLog, { exercise: ex, time: new Date().toISOString() }]; setExerciseLog(log); localStorage.setItem("brain-exercise-log", JSON.stringify(log)); setExerciseLoading(null); setInitialized(true); }, 500); };
   const logSip = () => { setExerciseLoading("sip"); setTimeout(() => { const u = [...sips, { time: new Date().toISOString() }]; setSips(u); setLastSip(new Date().toISOString()); localStorage.setItem("brain-sips", JSON.stringify(u)); setExerciseLoading(null); setInitialized(true); }, 500); };
 
@@ -170,13 +190,19 @@ export default function BrainPanel() {
           </div>
         </div>
 
-        <div className="bg-zinc-800 rounded-xl p-3 flex gap-3"><div className="w-10 h-10 rounded-xl bg-pink-500/20 flex items-center justify-center shrink-0"><Heart size={18} className="text-pink-400 animate-pulse-glow" /></div><div className="flex-1"><div className="text-zinc-500 text-[13px] uppercase mb-2">Mood</div><div className="flex gap-1.5 flex-wrap">{["happy","neutral","sad","anxious","angry","depressed","lonely"].map(m => (<button key={m} onClick={() => saveMood(m)} className={`px-2.5 py-1 rounded-lg text-[13px] capitalize transition ${mood === m ? "bg-cyan-500/20 text-cyan-400" : "bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700"}`}>{m}</button>))}</div></div></div>
-
-        <div className="bg-zinc-800 rounded-xl p-3 flex gap-3"><div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center shrink-0"><Activity size={18} className="text-purple-400" /></div><div className="flex-1"><div className="text-zinc-500 text-[13px] uppercase mb-2">Lifestyle</div><div className="space-y-1">{["overeat","junk food","less sleep","high stress","no exercise","alcohol"].map(item => (<label key={item} className="flex items-center gap-2 text-[13px] text-zinc-400 cursor-pointer"><input type="checkbox" checked={lifestyle.includes(item)} onChange={() => toggleLifestyle(item)} className="w-3 h-3 rounded accent-cyan-500" />{item}</label>))}</div></div></div>
-
-        <div className="bg-zinc-800 rounded-xl p-3"><div className="flex items-center justify-between mb-2"><div className="text-zinc-500 text-[13px] uppercase">Daily Boosters</div><button onClick={() => setInfoPopup("boosters")} className="text-cyan-400 hover:text-cyan-300"><Info size={10} /></button></div><div className="grid grid-cols-2 gap-2">{[{id:"sunlight",icon:<Sun size={16}/>,label:"Sunlight",active:sunlight,action:toggleSunlight,color:"amber"},{id:"social",icon:<Users size={16}/>,label:"Social",active:social,action:toggleSocial,color:"sky"},{id:"learning",icon:<BookOpen size={16}/>,label:"Learning",active:learning,action:toggleLearning,color:"violet"},{id:"breathwork",icon:<Wind size={16}/>,label:"Breathwork",active:breathwork,action:toggleBreathwork,color:"teal"}].map(item=>(<button key={item.id} onClick={item.action} className={`flex items-center gap-1.5 px-2 py-2 rounded-lg text-[13px] transition justify-center ${item.active ? "bg-"+item.color+"-500/20 text-"+item.color+"-400" : "bg-zinc-700/50 text-zinc-500 hover:bg-zinc-700"}`}>{item.icon}{item.label}</button>))}</div></div>
-
         <div className="bg-zinc-800 rounded-xl p-3"><div className="flex items-center gap-3 mb-3"><div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div className="flex-1"><div className="text-zinc-500 text-[13px] uppercase">Circadian Clock</div><div className="text-lg font-semibold text-cyan-400 tracking-wider">{currentTime}</div><div className="text-[13px] text-zinc-500 mt-0.5">{circadian} PHASE</div><div className="flex items-center gap-2 mt-1.5"><span className="text-[13px] text-zinc-500">Sleeping</span><div onClick={toggleAwake} className={`w-10 h-5 rounded-full relative cursor-pointer transition ${isAwake ? "bg-yellow-500" : "bg-indigo-500"}`}><div className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.5 transition ${isAwake ? "left-5" : "left-0.5"}`} /></div><span className="text-[13px] text-zinc-500">Awake</span></div></div></div><div className="relative pt-2"><div className="absolute top-0 border-l-[6px] border-r-[6px] border-b-[7px] border-l-transparent border-r-transparent border-b-cyan-400 -translate-x-1/2" style={{ left: ((hour >= 6 ? hour - 6 : hour + 18) / 24 * 100) + "%" }} /><div className="w-full h-3 bg-zinc-700 rounded-full relative overflow-hidden"><div className="absolute inset-0 flex"><div className="w-1/4 bg-amber-500/20 border-r border-zinc-600" /><div className="w-1/4 bg-yellow-400/20 border-r border-zinc-600" /><div className="w-1/4 bg-indigo-500/20 border-r border-zinc-600" /><div className="w-1/4 bg-blue-500/20" /></div></div></div><div className="flex justify-between text-[12px] text-zinc-600 mt-1"><span>6 AM</span><span>NOON</span><span>6 PM</span><span>6 AM</span></div></div>
+
+        <CollapsibleCard id="mood" title="Mood" icon={<Heart size={18} className="text-pink-400 animate-pulse-glow" />} iconBg="bg-pink-500/20" collapsed={collapsedCards.includes("mood")} onToggle={() => toggleCard("mood")}>
+          <div className="flex gap-1.5 flex-wrap">{["happy","neutral","sad","anxious","angry","depressed","lonely"].map(m => (<button key={m} onClick={() => saveMood(m)} className={`px-2.5 py-1 rounded-lg text-[13px] capitalize transition ${mood === m ? "bg-cyan-500/20 text-cyan-400" : "bg-zinc-700/50 text-zinc-400 hover:bg-zinc-700"}`}>{m}</button>))}</div>
+        </CollapsibleCard>
+
+        <CollapsibleCard id="lifestyle" title="Lifestyle" icon={<Activity size={18} className="text-purple-400" />} iconBg="bg-purple-500/20" collapsed={collapsedCards.includes("lifestyle")} onToggle={() => toggleCard("lifestyle")}>
+          <div className="space-y-1">{["overeat","junk food","less sleep","high stress","no exercise","alcohol"].map(item => (<label key={item} className="flex items-center gap-2 text-[13px] text-zinc-400 cursor-pointer"><input type="checkbox" checked={lifestyle.includes(item)} onChange={() => toggleLifestyle(item)} className="w-3 h-3 rounded accent-cyan-500" />{item}</label>))}</div>
+        </CollapsibleCard>
+
+        <CollapsibleCard id="boosters" title="Daily Boosters" icon={null} iconBg="" collapsed={collapsedCards.includes("boosters")} onToggle={() => toggleCard("boosters")} infoAction={() => setInfoPopup("boosters")}>
+          <div className="grid grid-cols-2 gap-2">{[{id:"sunlight",icon:<Sun size={16}/>,label:"Sunlight",active:sunlight,action:toggleSunlight,color:"amber"},{id:"social",icon:<Users size={16}/>,label:"Social",active:social,action:toggleSocial,color:"sky"},{id:"learning",icon:<BookOpen size={16}/>,label:"Learning",active:learning,action:toggleLearning,color:"violet"},{id:"breathwork",icon:<Wind size={16}/>,label:"Breathwork",active:breathwork,action:toggleBreathwork,color:"teal"}].map(item=>(<button key={item.id} onClick={item.action} className={`flex items-center gap-1.5 px-2 py-2 rounded-lg text-[13px] transition justify-center ${item.active ? "bg-"+item.color+"-500/20 text-"+item.color+"-400" : "bg-zinc-700/50 text-zinc-500 hover:bg-zinc-700"}`}>{item.icon}{item.label}</button>))}</div>
+        </CollapsibleCard>
 
         <div className="bg-zinc-800 rounded-xl p-3"><div className="flex items-center gap-3"><div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${lastSip ? "bg-cyan-500/20" : "bg-zinc-700"}`}><Droplets size={18} className={lastSip ? "text-cyan-400" : "text-zinc-500"} /></div><div className="flex-1"><div className="text-zinc-500 text-[13px] uppercase">Last Warm Water</div><div className="text-sm font-semibold text-zinc-200">{lastSip ? new Date(lastSip).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "Not logged"}</div><div className="flex items-center gap-1 text-[13px] mt-0.5"><span className={`w-1.5 h-1.5 rounded-full ${minutesSince < 20 ? "bg-green-400" : minutesSince < 45 ? "bg-yellow-400" : "bg-red-400"}`} />{minutesSince} min ago</div></div></div></div>
 
@@ -188,7 +214,9 @@ export default function BrainPanel() {
 
         <div className="bg-zinc-800 rounded-xl p-3"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div><div className="flex-1"><div className="text-zinc-500 text-[13px] uppercase">Sleep Window</div><div className="text-sm font-semibold text-zinc-200">{circadian === "NIGHT" ? "Optimal: Now" : "In ~" + (22 - hour) + " hours"}</div></div></div></div>
 
-        <div className="bg-zinc-800 rounded-xl p-3"><div className="flex items-center justify-between mb-3"><div className="text-zinc-500 text-[13px] uppercase">Neuro Protection</div><button onClick={() => setInfoPopup("exercise")} className="text-cyan-400 hover:text-cyan-300"><Info size={10} /></button></div><div className="grid grid-cols-2 gap-3">{[{id:"sip",icon:<Droplets size={20}/>,label:"Warm Water",color:"purple",action:logSip},{id:"pushups",icon:"🫀",label:"Pushups 50x",color:"emerald",action:()=>logExercise("pushups")},{id:"deadhang",icon:"🧘",label:"Dead Hang 30s",color:"emerald",action:()=>logExercise("deadhang")},{id:"forwardbend",icon:"🙏",label:"Bend 100x",color:"emerald",action:()=>logExercise("forwardbend")}].map(item=>(<button key={item.id} onClick={item.action} className={`w-full aspect-square rounded-2xl max-w-[72px] mx-auto bg-${item.color}-500/10 hover:bg-${item.color}-500/20 flex flex-col items-center justify-center text-${item.color}-400 transition gap-0.5`}>{exerciseLoading === item.id ? <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" /> : item.icon}<span className="text-[12px] text-zinc-400">{exerciseLoading === item.id ? "Done!" : item.label}</span></button>))}</div></div>
+        <CollapsibleCard id="neuro" title="Neuro Protection" icon={null} iconBg="" collapsed={collapsedCards.includes("neuro")} onToggle={() => toggleCard("neuro")} infoAction={() => setInfoPopup("exercise")}>
+          <div className="grid grid-cols-2 gap-3">{[{id:"sip",icon:<Droplets size={20}/>,label:"Warm Water",color:"purple",action:logSip},{id:"pushups",icon:"🫀",label:"Pushups 50x",color:"emerald",action:()=>logExercise("pushups")},{id:"deadhang",icon:"🧘",label:"Dead Hang 30s",color:"emerald",action:()=>logExercise("deadhang")},{id:"forwardbend",icon:"🙏",label:"Bend 100x",color:"emerald",action:()=>logExercise("forwardbend")}].map(item=>(<button key={item.id} onClick={item.action} className={`w-full aspect-square rounded-2xl max-w-[72px] mx-auto bg-${item.color}-500/10 hover:bg-${item.color}-500/20 flex flex-col items-center justify-center text-${item.color}-400 transition gap-0.5`}>{exerciseLoading === item.id ? <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" /> : item.icon}<span className="text-[12px] text-zinc-400">{exerciseLoading === item.id ? "Done!" : item.label}</span></button>))}</div>
+        </CollapsibleCard>
 
         <div className="text-zinc-600 text-[12px] text-center">{sips.length} sips · {exerciseLog.filter(e => new Date(e.time).toDateString() === new Date().toDateString()).length} exercises today</div>
       </div>)}
