@@ -1,0 +1,13 @@
+// Pure functions for sleep-related calculations
+
+export function calcHoursSlept(hour: number, circadian: string, isAwake: boolean): number {
+  if (circadian !== "NIGHT" || isAwake) return 0;
+  return Math.min(8, hour >= 22 ? hour - 22 : hour + 2);
+}
+
+export function calcCircadian(hour: number): string {
+  if (hour >= 6 && hour < 12) return "MORNING";
+  if (hour >= 12 && hour < 18) return "AFTERNOON";
+  if (hour >= 18 && hour < 22) return "EVENING";
+  return "NIGHT";
+}

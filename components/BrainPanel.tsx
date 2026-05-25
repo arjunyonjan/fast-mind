@@ -1,6 +1,11 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { Brain, Droplets, X, Info, Heart, Activity, Sun, Users, BookOpen, Wind, ChevronDown } from "lucide-react";
+import { calcGlymphatic, calcVasodilation, calcTotalClearance } from "@/features/brain/domain/clearance";
+import { calcEyeStrain } from "@/features/brain/domain/eyeStrain";
+import { calcBrainHealth } from "@/features/brain/domain/brainScore";
+import { calcMoodModifier, calcLifestyleModifier, calcNaturalAccumulation, calcAccumulation } from "@/features/brain/domain/accumulation";
+import { calcHoursSlept, calcCircadian } from "@/features/brain/domain/sleep";
 
 function CollapsibleCard({ id, title, icon, iconBg, collapsed, onToggle, children, infoAction }: { id: string; title: string; icon: React.ReactNode; iconBg: string; collapsed: boolean; onToggle: () => void; children: React.ReactNode; infoAction?: () => void }) {
   return (
@@ -111,7 +116,7 @@ export default function BrainPanel() {
       const nat = Math.min(100, h6 * 5.5 * mm * lm);
       const hoursSlept = (circadian === "NIGHT" && !isAwake) ? Math.min(8, (hour >= 22 ? hour - 22 : hour + 2)) : 0;
       const sc = hoursSlept > 0 ? hoursSlept * 0.06 : 0;
-      const tc = sc + (g / 100) * 0.05;
+      const tc = calcTotalClearance(hoursSlept, g);
       setAccumulationPercent(Math.round(nat * (1 - tc)));
       const isSleeping = (circadian === "NIGHT" && !isAwake);
       const hoursAwake = isSleeping ? 0 : (hour < 6 ? hour + 18 : hour - 6);

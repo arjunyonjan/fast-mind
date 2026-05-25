@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutGrid, Home, PanelLeftClose, PanelLeft, Plus, Zap, Sun, Moon, Activity, RefreshCw, Bug } from "lucide-react";
+import { FileText, LayoutGrid, Home, PanelLeftClose, PanelLeft, Plus, Zap, Sun, Moon, Activity, RefreshCw, Bug, FileImage } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import DeepSeekIcon from "@/components/DeepSeekIcon";
 
@@ -91,12 +91,12 @@ export default function AppSidebar() {
         <nav className="flex-1 space-y-0.5 px-3 mt-3">
           <Link href="/" className={link("/")} title="Home"><Home size={18} />{!collapsed && <span>Home</span>}</Link>
           <Link href="/documents" className={link("/documents")} title="Documents"><FileText size={18} />{!collapsed && <span>Documents</span>}</Link>
-          <Link href="/tasks" className={link("/tasks")} title="Tasks"><LayoutGrid size={18} />{!collapsed && <span>Tasks</span>}</Link>
+          <Link href="/tasks" className={link("/tasks")} title="Tasks"><LayoutGrid size={18} />{!collapsed && <span>Tasks</span>}</Link>{!collapsed && <a href="/diagrams" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition"><FileImage size={18} />Diagrams →</a>}
         </nav>
 
         {!collapsed && (
           <a href="https://platform.deepseek.com/usage" target="_blank" className="px-3 py-2 text-xs text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition border-t border-gray-200 dark:border-zinc-800">
-            <span className="flex items-center gap-1.5"><DeepSeekIcon size={14} className="text-[#4D6BFE]" /> DeepSeek Usage →</span>
+            <span className="flex items-center gap-1.5"><DeepSeekIcon size={14} className="text-[#4D6BFE]" /> DeepSeek Usage â†’</span>
           </a>
         )}
 
