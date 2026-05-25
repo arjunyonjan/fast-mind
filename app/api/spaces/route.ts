@@ -13,3 +13,4 @@ export async function POST(req: Request) {
   const result = await db.collection("spaces").insertOne({ name, createdAt: new Date() });
   return NextResponse.json({ success: true, space: { _id: result.insertedId.toString(), name } });
 }
+

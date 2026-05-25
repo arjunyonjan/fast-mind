@@ -42,7 +42,7 @@ export default function BrainPanel() {
   const [isAwake, setIsAwake] = useState(true);
   const [brainHealth, setBrainHealth] = useState(100);
   const [initialized, setInitialized] = useState(false);
-  const [panelWidth, setPanelWidth] = useState(340);
+  const [panelWidth, setPanelWidth] = useState(340); const [isFullscreen, setIsFullscreen] = useState(false);
   const [sunlight, setSunlight] = useState(false);
   const [social, setSocial] = useState(false);
   const [learning, setLearning] = useState(false);
@@ -64,7 +64,7 @@ export default function BrainPanel() {
   const toggleSocial = () => { const v = !social; setSocial(v); localStorage.setItem("brain-social", String(v)); setInitialized(true); };
   const toggleLearning = () => { const v = !learning; setLearning(v); localStorage.setItem("brain-learning", String(v)); setInitialized(true); };
   const toggleBreathwork = () => { const v = !breathwork; setBreathwork(v); localStorage.setItem("brain-breathwork", String(v)); setInitialized(true); };
-  const toggleCard = (id: string) => { setCollapsedCards(prev => { const next = prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]; localStorage.setItem("brain-collapsed", JSON.stringify(next)); return next; }); };
+  const toggleCard = (id: string) => { setCollapsedCards(prev => { const next = prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id];  const toggleFullscreen = () => setIsFullscreen(!isFullscreen); localStorage.setItem("brain-collapsed", JSON.stringify(next)); return next; }); };
   const logExercise = (ex: string) => { setExerciseLoading(ex); setTimeout(() => { const log = [...exerciseLog, { exercise: ex, time: new Date().toISOString() }]; setExerciseLog(log); localStorage.setItem("brain-exercise-log", JSON.stringify(log)); setExerciseLoading(null); setInitialized(true); }, 500); };
   const logSip = () => { setExerciseLoading("sip"); setTimeout(() => { const u = [...sips, { time: new Date().toISOString() }]; setSips(u); setLastSip(new Date().toISOString()); localStorage.setItem("brain-sips", JSON.stringify(u)); setExerciseLoading(null); setInitialized(true); }, 500); };
 
@@ -229,3 +229,4 @@ export default function BrainPanel() {
     {infoPopup && (<div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setInfoPopup(null)}><div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 w-full max-w-2xl text-sm font-sans text-zinc-300" onClick={e => e.stopPropagation()}><div className="flex items-center justify-between mb-3"><h3 className="text-lg font-semibold text-cyan-400">{infoPopup}</h3><button onClick={() => setInfoPopup(null)} className="text-zinc-500 hover:text-white"><X size={18} /></button></div><div className="w-full h-56 bg-zinc-800 rounded-xl mb-4 flex items-center justify-center text-zinc-600 text-sm">Image placeholder</div><p className="text-zinc-400 leading-relaxed">Detailed science explanation coming soon.</p><button onClick={() => setInfoPopup(null)} className="mt-6 w-full py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-base transition">Got it</button></div></div>)}
   </>);
 }
+

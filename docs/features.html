@@ -1,0 +1,121 @@
+﻿<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>FastMind Feature Roadmap</title></head>
+<body>
+<div class="prose max-w-none">
+
+<h1>FastMind Feature Roadmap &amp; Buddha Engine Enhancements</h1>
+
+<hr>
+
+<h2>🔴 Critical Fixes (Do First)</h2>
+<ul>
+<li><strong>1. Uncomment Sidebar Navigation</strong> – layout.tsx has entire &lt;nav&gt; commented out; users can't navigate without direct URLs</li>
+<li><strong>2. Fix Duplicate CSS Animations</strong> – globals.css has slide-in and modal-pop keyframes defined twice</li>
+<li><strong>3. Add SVG Diagram Files</strong> – DiagramViewer references 3 SVGs in /public/docs/ that don't exist yet</li>
+<li><strong>4. Wire DiagramViewer into Sidebar</strong> – Component exists but never rendered in AppSidebar.tsx</li>
+</ul>
+
+<h2>🟡 High-Impact Features</h2>
+<ul>
+<li><strong>5. Connect AI Chat to Real LLM</strong> – /api/chat/route.ts currently echoes; wire to DeepSeek/HuggingFace with intent routing</li>
+<li><strong>6. Add Document Slug Support</strong> – API accepts slug but frontend never sends it</li>
+<li><strong>7. Add Search to Documents Page</strong> – Search input exists but filtering logic missing</li>
+<li><strong>8. Add Task Management Pages</strong> – Nav links to /tasks but no page or API routes exist yet</li>
+</ul>
+
+<h2>🟢 Polish &amp; DX</h2>
+<ul>
+<li><strong>9. Loading Skeletons</strong> – Replace RingLoader full-screen blocker</li>
+<li><strong>10. Keyboard Shortcuts</strong> – Ctrl+N for new doc, Ctrl+/ for search</li>
+<li><strong>11. Dark Mode Toggle</strong> – Theme infrastructure exists but no toggle button</li>
+<li><strong>12. Document Word Count</strong> – Simple metric in editor footer</li>
+<li><strong>13. Toast Auto-Dismiss Progress Bar</strong></li>
+<li><strong>14. Error Boundary</strong> – Catch TipTap/editor crashes</li>
+<li><strong>15. SEO Metadata per Document</strong> – Dynamic title from doc content</li>
+</ul>
+
+<h2>🔵 Architecture / Backend</h2>
+<ul>
+<li><strong>16. Rate Limiting on AI Chat</strong> – Prevent API key abuse</li>
+<li><strong>17. Document Version History</strong> – Store previous versions in MongoDB</li>
+<li><strong>18. User Auth (NextAuth/Clerk)</strong> – Currently single-user</li>
+<li><strong>19. Image Upload Endpoint</strong> – Currently only URL-based images</li>
+<li><strong>20. Export to Markdown/PDF</strong> – Download button on document view</li>
+</ul>
+
+<hr>
+
+<h2>🧘 Buddha Engine – Wake Time &amp; Circadian Tracking</h2>
+<ul>
+<li>Sleeping → Awake toggle captures wake hour, resets hours-awake counter to zero</li>
+<li>Eye strain, waste accumulation, brain health recalc from actual wake moment — no more false all-nighter penalties</li>
+<li>Wake time persists in localStorage and survives refreshes</li>
+<li>Fixes the 5 AM brain-at-10% bug and aligns simulation slider with real wake/sleep boundaries</li>
+</ul>
+
+<h2>🍽️ Nutrition Tracker &amp; Intermittent Fasting</h2>
+<ul>
+<li>Food logging with fasting windows (16:8, 18:6, OMAD)</li>
+<li><strong>Math effects:</strong> metabolic score, autophagy timer (12+ hours), insulin sensitivity index</li>
+<li><strong>Icons:</strong> 🌙 fasting, 🍎 meal, ⏱️ timer, 🔥 metabolism</li>
+</ul>
+
+<h2>🧠 Meditation States &amp; AI Doc Reformatter</h2>
+<ul>
+<li>Meditation timer with state tracking (calm, focused, open)</li>
+<li>AI reformat button with diff/confirmation (old vs new version)</li>
+</ul>
+
+<h2>🎵 Music &amp; Kindness Module</h2>
+<ul>
+<li>Music listening: focus/relaxation toggle with binaural presets</li>
+<li>Act of kindness random service – daily random prompt + completion log</li>
+</ul>
+
+<h2>🏆 Buddha 5 Colors Panel</h2>
+<ul>
+<li><strong style="color:#ef4444;">🔴 Energy (Red)</strong> – Vitality, drive, physical activation</li>
+<li><strong style="color:#f97316;">🟠 Purity (Orange)</strong> – Cleansing, detox, mental clarity</li>
+<li><strong style="color:#3b82f6;">🔵 Knowledge (Blue)</strong> – Wisdom, learning, insight</li>
+<li><strong style="color:#10b981;">🟢 Peace (Green)</strong> – Calm, balance, restoration</li>
+<li><strong style="color:#f59e0b;">🟡 Balance (Yellow)</strong> – Integration, harmony, center</li>
+<li>SVG flag strip or card distribution with explanations per color on hover/click</li>
+</ul>
+
+<h2>🧘 Spine-to-Brain Movement Module</h2>
+<ul>
+<li>100 toe touches throughout the day (seated forward bends, standing hangs, crossed-leg twists)</li>
+<li>20 push-ups every 2 hours to spike cerebral blood flow and reset posture</li>
+<li>Desk-friendly: no equipment needed</li>
+<li><strong>Streak counter:</strong> "You've done 340 toe touches and 60 push-ups this week"</li>
+<li>Stress auto-drops 1 point for every 10 reps logged</li>
+<li>Glymphatic +3% boost after each micro-session</li>
+</ul>
+
+<h2>⏰ Move-or-Freeze Nudge</h2>
+<ul>
+<li>90-min inactivity alert: "Your spine is stiff. 20 toe touches + 5 push-ups?"</li>
+<li>Animated spine icon that gradually compresses, then decompresses when you log movement</li>
+<li>Posture check every 30 min: shoulders back, chin up, unclench jaw</li>
+</ul>
+
+<h2>📊 Brain Dashboard Enhancements</h2>
+<ul>
+<li>Weekly movement vs focus chart</li>
+<li>Hydration + stretch + push-up composite score</li>
+<li>Daily movement log with rep counts</li>
+</ul>
+
+<h2>💾 Storage Strategy</h2>
+<ul>
+<li>localStorage for instant logging</li>
+<li>MongoDB for weekly trends</li>
+</ul>
+
+<hr>
+
+<p><em>Updated 25 May 2026</em></p>
+</div>
+</body>
+</html>
