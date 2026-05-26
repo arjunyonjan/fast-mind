@@ -6,8 +6,9 @@ import { FileText, Search, Plus, RefreshCw } from "lucide-react";
 interface Doc { _id: string; title: string; content: string; updatedAt: string; }
 
 export default function DocumentsPage() {
-  const [docs, setDocs] = useState<Doc[]>([]);
+  
   const [loading, setLoading] = useState(true);
+  const [docs, setDocs] = useState<Doc[]>([]);
   const [ready, setReady] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -51,3 +52,7 @@ export default function DocumentsPage() {
     </div>
   );
 }
+
+
+
+

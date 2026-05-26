@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 
 export async function GET() {
@@ -28,10 +28,12 @@ export async function POST(req: Request) {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    console.log("✅ Document saved:", result.insertedId);
+    console.log("? Document saved:", result.insertedId);
     return NextResponse.json({ success: true, document: { _id: result.insertedId.toString(), title, content } });
   } catch (err: any) {
     console.error("[API/documents POST]", err.message);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
+

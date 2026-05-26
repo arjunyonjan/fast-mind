@@ -1,11 +1,8 @@
-import ThemeProvider from '@/components/ThemeProvider';
-import BrainPanel from '@/components/BrainPanel';
-import DebugPanelWrapper from '@/components/DebugPanelWrapper';
-import AppSidebar from '@/components/AppSidebar';
-import MobileMenuButton from '@/components/MobileMenuButton';
 import type { Metadata } from 'next';
 import './globals.css';
 import { ToastProvider } from '@/components/ToastProvider';
+import ThemeProvider from "@/components/ThemeProvider";
+import { ClientProviders } from '@/components/ClientProviders';
 
 export const metadata: Metadata = { title: 'FastMind', description: 'Lightning-fast document writing' };
 
@@ -15,15 +12,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ThemeProvider>
           <ToastProvider>
-            <div className="flex h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 relative"><MobileMenuButton />
-              <AppSidebar />
-              <main className="flex-1 overflow-y-auto">{children}</main>
-            </div>
+            <nav className="bg-white border-b border-gray-200 sticky top-0 z-40 backdrop-blur-sm bg-white/80">
+              <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+                <a href="/" className="flex items-center gap-2">
+                  <span className="text-2xl">?</span>
+                  <span className="text-xl font-bold bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent">FastMind</span>
+                </a>
+                <div className="flex gap-4">
+                  <a href="/documents" className="text-gray-600 hover:text-cyan-500 transition">My Docs</a>
+                  <a href="/documents/new" className="text-gray-600 hover:text-cyan-500 transition">New Doc</a>
+                </div>
+              </div>
+            </nav>
+            <main>{children}</main>
+            <ClientProviders />
           </ToastProvider>
-          <BrainPanel />
-          <DebugPanelWrapper />
         </ThemeProvider>
       </body>
     </html>
   );
 }
+
