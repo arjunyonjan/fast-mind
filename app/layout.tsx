@@ -1,5 +1,5 @@
 import ThemeProvider from '@/components/ThemeProvider';
-import BrainPanel from '@/components/BrainPanel';
+// import BrainPanel from '@/components/BrainPanel';
 import DebugPanelWrapper from '@/components/DebugPanelWrapper';
 import AppSidebar from '@/components/AppSidebar';
 import MobileMenuButton from '@/components/MobileMenuButton';
@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <BrainPanel />
           <DebugPanelWrapper />
         </ThemeProvider>
-      </body>
+        <BrainPanel /></body>
     </html>
   );
 }
