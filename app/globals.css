@@ -90,3 +90,34 @@ button, a, [role='button'] { cursor: pointer; }
 .prose pre:hover::after {
   opacity: 1;
 }
+
+/* Copy button for code blocks */
+.prose pre {
+  position: relative;
+  transition: all 0.2s;
+}
+
+.prose pre::after {
+  content: "?? Copy";
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #374151;
+  color: #e5e7eb;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: system-ui;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+
+.prose pre:hover::after {
+  opacity: 1;
+}
+
+.prose pre::after:hover {
+  background: #4b5563;
+}
