@@ -1,9 +1,7 @@
-﻿import { MongoClient, Db } from 'mongodb';
+import { MongoClient, Db } from 'mongodb';
 
 const uri = process.env.MONGODB_URI!;
 const dbName = process.env.DB_NAME!;
-
-console.log(uri, dbName , "----------------------------------")
 
 if (!uri) throw new Error('MONGODB_URI is missing');
 if (!dbName) throw new Error('DB_NAME is missing');
