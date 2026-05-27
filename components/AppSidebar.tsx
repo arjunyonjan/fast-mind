@@ -92,12 +92,12 @@ export default function AppSidebar() {
           <Link href="/" className={link("/")} title="Home"><Home size={18} />{!collapsed && <span>Home</span>}</Link>
           <Link href="/documents" className={link("/documents")} title="Documents"><FileText size={18} />{!collapsed && <span>Documents</span>}</Link>
           <Link href="/tasks" className={link("/tasks")} title="Tasks"><LayoutGrid size={18} />{!collapsed && <span>Tasks</span>}</Link>
-          {!collapsed && <a href="/diagrams" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition"><FileImage size={18} />Diagrams →</a>}
+          {!collapsed && <a href="/diagrams" className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition"><FileImage size={18} />Diagrams Ã¢â€ â€™</a>}
         </nav>
 
         {!collapsed && (
           <a href="https://platform.deepseek.com/usage" target="_blank" className="px-3 py-2 text-xs text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition border-t border-gray-200 dark:border-zinc-800">
-            <span className="flex items-center gap-1.5"><DeepSeekIcon size={14} className="text-[#4D6BFE]" /> DeepSeek Usage →</span>
+            <span className="flex items-center gap-1.5"><DeepSeekIcon size={14} className="text-[#4D6BFE]" /> DeepSeek Usage Ã¢â€ â€™</span>
           </a>
         )}
 
