@@ -1,5 +1,20 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
+import { recordUsage } from "@/lib/token-monitor";
+
+// Helper: extract and record token usage from DeepSeek response
+function trackTokens(responseJson: any, model: string = "deepseek-chat") {
+  const u = responseJson?.usage;
+  if (!u) return;
+  recordUsage({
+    inputTokens: u.prompt_tokens || 0,
+    outputTokens: u.completion_tokens || 0,
+    totalTokens: u.total_tokens || 0,
+    timestamp: new Date().toISOString(),
+    model,
+    requestId: responseJson.id || undefined,
+  });
+}
 
 export async function POST(req: Request) {
   try {
@@ -26,7 +41,9 @@ export async function POST(req: Request) {
         temperature: 0, max_tokens: 10
       }),
     });
-    const intent = classifyRes.ok ? ((await classifyRes.json()).choices?.[0]?.message?.content?.trim().toLowerCase() || "create_task") : "create_task";
+    const classifyJson = classifyRes.ok ? await classifyRes.json() : null;
+    const intent = classifyJson?.choices?.[0]?.message?.content?.trim().toLowerCase() || "create_task";
+    trackTokens(classifyJson, "deepseek-chat");
 
     const db = await connectToDatabase();
 
@@ -72,6 +89,7 @@ export async function POST(req: Request) {
             });
             if (spaceRes.ok) {
               const sj = await spaceRes.json();
+              trackTokens(sj, "deepseek-chat");
               const name = sj.choices?.[0]?.message?.content?.trim();
               const match = spaces.find(s => s.name.toLowerCase() === name?.toLowerCase());
               if (match) finalSpaceId = match._id.toString();
@@ -116,6 +134,8 @@ export async function POST(req: Request) {
         }),
       });
       const identifier = extractRes.ok ? ((await extractRes.json()).choices?.[0]?.message?.content?.trim() || "") : "";
+      const extractJson2 = extractRes.ok ? await extractRes.json() : null;
+      trackTokens(extractJson2, "deepseek-chat");
       const tasks = await db.collection("tasks").find({}).sort({ createdAt: -1 }).limit(10).toArray();
       let target = null;
       const num = parseInt(identifier);
@@ -153,6 +173,7 @@ export async function POST(req: Request) {
       });
       if (r.ok) {
         const j = await r.json();
+        trackTokens(j, "deepseek-chat");
         const txt = j.choices?.[0]?.message?.content || "";
         const m = txt.match(/\{[\s\S]*\}/);
         if (m) return createTaskFromData(JSON.parse(m[0]));
@@ -182,6 +203,7 @@ export async function POST(req: Request) {
       });
       if (!extractRes.ok) return NextResponse.json({ reply: "⚠️ DeepSeek error " + extractRes.status }, { status: 502 });
       const j2 = await extractRes.json();
+      trackTokens(j2, "deepseek-chat");
       const txt2 = j2.choices?.[0]?.message?.content || "";
       const m2 = txt2.match(/\{[\s\S]*\}/);
       if (!m2) return NextResponse.json({ reply: "⚠️ Could not parse document JSON. Raw: " + txt2.slice(0,100) });
@@ -210,6 +232,7 @@ export async function POST(req: Request) {
       });
       if (chatRes.ok) {
         const j = await chatRes.json();
+        trackTokens(j, "deepseek-chat");
         return NextResponse.json({ reply: j.choices?.[0]?.message?.content || "🤔 I'm not sure." });
       }
       return NextResponse.json({ reply: "⚠️ Chat unavailable." });
@@ -230,6 +253,7 @@ export async function POST(req: Request) {
     });
     if (!r.ok) return NextResponse.json({ reply: "⚠️ DeepSeek error " + r.status }, { status: 502 });
     const j = await r.json();
+    trackTokens(j, "deepseek-chat");
     const txt = j.choices?.[0]?.message?.content || "";
     const m = txt.match(/\{[\s\S]*\}/);
     if (!m) return NextResponse.json({ reply: "⚠️ Invalid response" }, { status: 502 });

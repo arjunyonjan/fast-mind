@@ -103,9 +103,10 @@ export default function BrainPanel() {
           "high stress":"High Stress","no exercise":"No Exercise","sitting too long":"Sitting Too Long",
           "poor posture":"Poor Posture","overworking":"Overworking","endless social media":"Endless Social Media",
         };
-        const migrated = oldItems.map((i: string) => map[i] || i);
-        setLifestyle([...new Set(migrated)]);
-        localStorage.setItem("brain-lifestyle", JSON.stringify([...new Set(migrated)]));
+        const migrated: string[] = oldItems.map((i: string) => map[i] || i);
+        const unique = Array.from(new Set(migrated));
+        setLifestyle(unique);
+        localStorage.setItem("brain-lifestyle", JSON.stringify(unique));
       }
       const pw = localStorage.getItem("brain-panel-width"); if (pw) setPanelWidth(parseInt(pw));
       if (localStorage.getItem("brain-open") === "true") setOpen(true);

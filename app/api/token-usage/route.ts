@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ log: getUsageLog(limit) });
   }
 
-  const summary = getUsageSummary(startDate, endDate);
+  const summary = getUsageSummary(startDate ?? undefined, endDate ?? undefined);
   return NextResponse.json({ summary });
 }
 

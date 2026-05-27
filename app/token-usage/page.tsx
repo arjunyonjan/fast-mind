@@ -323,11 +323,11 @@ function StatCard({ icon, label, value, trend, accent }: {
   );
 }
 
-function calcTrend(entries: [string, { calls: number; tokens: number }[]][], key: 'calls' | 'tokens') {
+function calcTrend(entries: [string, { calls: number; tokens: number }][], key: 'calls' | 'tokens') {
   const half = Math.ceil(entries.length / 2);
   const first = entries.slice(0, half).reduce((s, [, d]) => s + d[key], 0);
   const second = entries.slice(half).reduce((s, [, d]) => s + d[key], 0);
   if (first === 0) return null;
   const pct = Math.round(((second - first) / first) * 100);
-  return { direction: pct >= 0 ? 'up' : 'down', value: `${Math.abs(pct)}%` };
+  return { direction: (pct >= 0 ? 'up' : 'down') as 'up' | 'down', value: `${Math.abs(pct)}%` };
 }
