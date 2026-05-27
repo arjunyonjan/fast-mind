@@ -121,3 +121,8 @@ button, a, [role='button'] { cursor: pointer; }
 .prose pre::after:hover {
   background: #4b5563;
 }
+
+/* Ensure sidebar and main layout */
+.lg\:pl-64 {
+  padding-left: 16rem; /* 256px */
+}
