@@ -2,19 +2,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, FileText } from "lucide-react";
+import { ArrowLeft, Save, X } from "lucide-react";
 import { useToast } from "@/components/ToastProvider";
 import dynamic from "next/dynamic";
 
-const AdvancedEditor = dynamic(() => import("@/components/editor/AdvancedEditor"), {
-  ssr: false,
-  loading: () => (
-    <div className="animate-pulse">
-      <div className="h-12 bg-gray-100 rounded-lg mb-4"></div>
-      <div className="h-64 bg-gray-100 rounded-lg"></div>
-    </div>
-  ),
-});
+const AdvancedEditor = dynamic(() => import("@/components/editor/AdvancedEditor"), { ssr: false, loading: () => <div className="h-48 bg-gray-50 animate-pulse rounded" /> });
 
 export default function NewDocumentPage() {
   const router = useRouter();
@@ -31,10 +23,7 @@ export default function NewDocumentPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) {
-      showToast("Please add a title", "error");
-      return;
-    }
+    if (!title.trim()) { showToast("Please add a title", "error"); return; }
     setLoading(true);
     try {
       const res = await fetch("/api/documents", {
@@ -46,94 +35,32 @@ export default function NewDocumentPage() {
       if (data.success) {
         showToast("Document created!", "success");
         router.push(`/documents/${data.document.id}`);
-      } else {
-        showToast(data.error || "Failed to create", "error");
-        setLoading(false);
-      }
-    } catch {
-      showToast("Failed to create", "error");
-      setLoading(false);
-    }
+      } else { showToast(data.error || "Failed", "error"); setLoading(false); }
+    } catch { showToast("Failed", "error"); setLoading(false); }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Back button */}
-        <div className="mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition"
-          >
-            <ArrowLeft size={16} />
-            Back to home
+    <div className="max-w-4xl mx-auto px-6 py-8">
+      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition mb-6">
+        <ArrowLeft size={14} /> Back
+      </Link>
+      <form onSubmit={handleSubmit}>
+        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} onBlur={generateSlug} className="w-full text-4xl font-bold text-gray-900 bg-transparent border-0 focus:outline-none focus:ring-0 p-0 mb-2 placeholder:text-gray-200" placeholder="Untitled" autoFocus />
+        <div className="flex items-center gap-2 text-sm text-gray-400 mb-8 pb-2 border-b border-gray-100">
+          <span className="text-gray-300">/</span>
+          <input type="text" value={slug} onChange={(e) => setSlug(e.target.value)} className="flex-1 font-mono text-sm bg-transparent border-0 focus:outline-none focus:ring-0 p-0" placeholder="your-slug" />
+        </div>
+        <AdvancedEditor content={content} onChange={setContent} placeholder="Write something..." />
+        <div className="fixed bottom-0 right-0 left-64 bg-white/90 backdrop-blur-md border-t border-gray-100 py-4 px-6 flex justify-end gap-3 z-50 shadow-lg">
+          <Link href="/" className="px-5 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition">
+            Cancel
           </Link>
+          <button type="submit" disabled={loading} className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-medium rounded-lg hover:shadow-md disabled:opacity-50 transition flex items-center gap-2">
+            <Save size={16} />
+            {loading ? "Publishing..." : "Publish"}
+          </button>
         </div>
-
-        {/* Main card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 sm:p-8 border-b border-gray-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-cyan-50 rounded-xl">
-                <FileText className="w-5 h-5 text-cyan-600" />
-              </div>
-              <h1 className="text-2xl font-semibold text-gray-900">New Document</h1>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  onBlur={generateSlug}
-                  className="w-full px-4 py-2.5 text-lg border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition"
-                  placeholder="e.g., My Awesome Document"
-                  autoFocus
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Slug (URL)</label>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-gray-400">/documents/</span>
-                  <input
-                    type="text"
-                    value={slug}
-                    onChange={(e) => setSlug(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono text-sm"
-                    placeholder="your-slug"
-                  />
-                </div>
-                <p className="text-xs text-gray-400 mt-1">Leave empty to auto-generate from title</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Content</label>
-                <AdvancedEditor content={content} onChange={setContent} placeholder="Start writing your story here..." />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-medium hover:shadow-md disabled:opacity-50 transition"
-                >
-                  <Save size={18} />
-                  {loading ? "Creating..." : "Publish Document"}
-                </button>
-                <Link
-                  href="/"
-                  className="px-6 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition text-center"
-                >
-                  Cancel
-                </Link>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+      </form>
     </div>
   );
 }
