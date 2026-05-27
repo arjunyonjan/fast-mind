@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Brain, Droplets, X, Info, Heart, Activity, Sun, Users, BookOpen, Wind, ChevronDown, Zap, Spline, PersonStanding } from "lucide-react";
+import { Brain, Droplets, X, Info, Heart, Activity, Sun, Users, BookOpen, Wind, ChevronDown } from "lucide-react";
 import CircularProgress from "@/components/CircularProgress";
 import { calcGlymphatic, calcVasodilation, calcTotalClearance } from "@/features/brain/domain/clearance";
 import { calcEyeStrain } from "@/features/brain/domain/eyeStrain";
@@ -8,7 +8,7 @@ import { calcBrainHealth } from "@/features/brain/domain/brainScore";
 import { calcMoodModifier, calcLifestyleModifier, calcNaturalAccumulation, calcAccumulation } from "@/features/brain/domain/accumulation";
 import { calcHoursSlept, calcCircadian } from "@/features/brain/domain/sleep";
 
-function CollapsibleCard({ id, title, icon, iconBg, collapsed, onToggle, children, infoAction }: { id: string; title: string; icon: React.ReactNode; iconBg: string; collapsed: boolean; onToggle: () => void; children: React.ReactNode; infoAction?: () => void }) {
+function CollapsibleCard({ id, title, icon, iconBg, collapsed, onToggle, children, infoAction }: any) {
   return (
     <div className="bg-zinc-800 rounded-xl p-4">
       <div className="flex items-center gap-3 cursor-pointer py-1" onClick={onToggle}>
@@ -43,7 +43,6 @@ export default function BrainPanel() {
   const [isAwake, setIsAwake] = useState(true);
   const [brainHealth, setBrainHealth] = useState(100);
   const [initialized, setInitialized] = useState(false);
-  const [forceInit, setForceInit] = useState(false);
   const [panelWidth, setPanelWidth] = useState(340);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [sunlight, setSunlight] = useState(false);
@@ -88,14 +87,6 @@ export default function BrainPanel() {
       if (localStorage.getItem("brain-sips") || localStorage.getItem("brain-mood")) setInitialized(true);
     } catch {}
   }, []);
-
-  useEffect(() => {
-    if (!initialized && !forceInit) {
-      setForceInit(true);
-      setMood("neutral");
-      setInitialized(true);
-    }
-  }, [initialized, forceInit]);
 
   useEffect(() => {
     const clock = setInterval(() => {
@@ -179,7 +170,7 @@ export default function BrainPanel() {
   };
 
   return (<>
-    <button onClick={() => toggleOpen(true)} className={`fixed bottom-4 right-4 z-[9998] p-3.5 rounded-full shadow-lg transition ${hc === "green" ? "bg-green-500 animate-pulse-glow" : hc === "yellow" ? "bg-yellow-500 animate-pulse-glow" : "bg-red-500 animate-pulse-danger"}`}><Brain size={26} className="text-white" /></button>
+    <button onClick={() => toggleOpen(true)} className={`fixed top-1/2 right-4 -translate-y-1/2 z-[9998] p-3.5 rounded-full shadow-lg transition ${hc === "green" ? "bg-green-500 animate-pulse-glow" : hc === "yellow" ? "bg-yellow-500 animate-pulse-glow" : "bg-red-500 animate-pulse-danger"}`}><Brain size={26} className="text-white" /></button>
     {open && (<div className={`fixed inset-0 z-[9999] flex items-start ${isFullscreen ? 'justify-center' : 'justify-end'} pointer-events-none`}><div className={`relative pointer-events-auto h-full bg-zinc-900/95 border-l border-zinc-800 shadow-2xl flex flex-col text-base font-sans text-zinc-300 ${isFullscreen ? 'fixed inset-0 w-full' : ''}`} style={!isFullscreen ? { width: panelWidth } : {}}>
       <div className="flex items-center justify-between p-5 pb-2 shrink-0"><h2 className="text-sm font-semibold text-zinc-200 flex items-center gap-2"><Brain size={16} className="text-purple-400" /> YOUR BRAIN<span className="text-[9px] font-normal text-zinc-500 ml-1">— powered by</span><span className="text-[9px] font-semibold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent ml-0.5">Buddha Engine</span></h2><button onClick={toggleFullscreen} className="text-zinc-500 hover:text-white mr-2">⛶</button><button onClick={() => toggleOpen(false)} className="text-zinc-500 hover:text-white"><X size={14} /></button></div>
       <div className="absolute left-0 top-0 bottom-0 w-1.5 cursor-w-resize hover:bg-cyan-500/20 z-10 group" onMouseDown={onResize}><div className="absolute left-0.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition"><svg width="8" height="16" viewBox="0 0 8 16" fill="currentColor" className="text-cyan-400"><circle cx="2" cy="4" r="1.2"/><circle cx="6" cy="4" r="1.2"/><circle cx="2" cy="8" r="1.2"/><circle cx="6" cy="8" r="1.2"/><circle cx="2" cy="12" r="1.2"/><circle cx="6" cy="12" r="1.2"/></svg></div></div>
