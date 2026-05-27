@@ -49,8 +49,7 @@ export default function Home() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 shadow-lg mb-4"><span className="text-3xl">⚡</span></div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">FastMind</h1>
-            <p className="text-gray-400 dark:text-zinc-500 mt-1 text-sm">Notion-grade editor with rich formatting</p>
-            
+            <p className="text-gray-400 dark:text-zinc-500 mt-1 text-sm">From thought to action in seconds</p>
           </div>
           <div className="w-full max-w-2xl">
             <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-800 overflow-hidden">
