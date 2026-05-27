@@ -1,14 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const db = await connectToDatabase();
-    const doc = await db.collection('documents').findOne({ _id: new ObjectId(params.id) });
+    const doc = await db.collection('documents').findOne({ _id: new ObjectId(id) });
     if (!doc) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
@@ -19,14 +20,15 @@ export async function GET(
 }
 
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { title, content } = await req.json();
+    const { id } = await params;
+    const { title, content } = await request.json();
     const db = await connectToDatabase();
     const result = await db.collection('documents').updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       { $set: { title, content, updatedAt: new Date() } }
     );
     if (result.matchedCount === 0) {
@@ -39,12 +41,13 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const db = await connectToDatabase();
-    const result = await db.collection('documents').deleteOne({ _id: new ObjectId(params.id) });
+    const result = await db.collection('documents').deleteOne({ _id: new ObjectId(id) });
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }

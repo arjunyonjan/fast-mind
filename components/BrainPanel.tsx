@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useRef } from "react";
 import { Brain, Droplets, X, Info, Heart, Activity, Sun, Users, BookOpen, Wind, ChevronDown } from "lucide-react";
 import { calcGlymphatic, calcVasodilation, calcTotalClearance } from "@/features/brain/domain/clearance";
