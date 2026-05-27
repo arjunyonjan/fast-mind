@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 /* Animations */
 @keyframes slide-in {
   from { transform: translateX(100%); opacity: 0; }

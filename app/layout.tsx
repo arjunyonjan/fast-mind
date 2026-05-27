@@ -17,13 +17,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50">
+      <body className="bg-gray-50 dark:bg-zinc-950 h-screen overflow-hidden">
         <ThemeProvider>
           <ToastProvider>
-            <div className="flex">
+            <div className="flex h-screen">
               <AppSidebar />
-              <div className="flex-1">
-                <main>{children}</main>
+              <div className="flex-1 min-w-0 flex flex-col h-screen">
+                <main className="flex-1 min-h-0 h-full">{children}</main>
               </div>
             </div>
             <ClientProviders />
