@@ -326,8 +326,7 @@ export default function BrainPanel() {
     <button
       onClick={() => toggleOpen(true)}
       className={`fixed z-[9998] p-3.5 rounded-full shadow-lg transition
-        bottom-6 right-6
-        sm:top-1/2 sm:right-4 sm:-translate-y-1/2 sm:bottom-auto
+        top-1/2 right-4 -translate-y-1/2
         ${hc === "green" ? "bg-green-500 animate-pulse-glow" : hc === "yellow" ? "bg-yellow-500 animate-pulse-glow" : "bg-red-500 animate-pulse-danger"}`}
     >
       <Brain size={26} className="text-white" />
