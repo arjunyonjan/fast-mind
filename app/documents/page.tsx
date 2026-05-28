@@ -64,11 +64,11 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-zinc-950">
+    <div className="flex flex-col h-full min-h-0 bg-white dark:bg-zinc-950">
       {loading && <div className="fixed top-0 left-0 right-0 h-0.5 z-50"><div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-loading-bar" /></div>}
 
-      {/* Header */}
-      <div className="border-b border-zinc-100 dark:border-zinc-800 px-6 py-4">
+      {/* Header — shrink-0 so it stays fixed */}
+      <div className="border-b border-zinc-100 dark:border-zinc-800 px-6 py-4 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
@@ -119,8 +119,8 @@ export default function DocumentsPage() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Content — scrollable */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-12 h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">

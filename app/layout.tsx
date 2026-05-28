@@ -4,6 +4,7 @@ import { ToastProvider } from "@/components/ToastProvider";
 import ThemeProvider from "@/components/ThemeProvider";
 import { ClientProviders } from "@/components/ClientProviders";
 import AppSidebar from "@/components/AppSidebar";
+import MobileMenuButton from "@/components/MobileMenuButton";
 
 export const metadata: Metadata = {
   title: "FastMind",
@@ -20,6 +21,7 @@ export default function RootLayout({
       <body className="bg-gray-50 dark:bg-zinc-950 h-screen overflow-hidden">
         <ThemeProvider>
           <ToastProvider>
+            <MobileMenuButton />
             <div className="flex h-screen">
               <AppSidebar />
               <div className="flex-1 min-w-0 flex flex-col h-screen">
