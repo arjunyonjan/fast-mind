@@ -1,17 +1,13 @@
-"use client";
-import dynamic from "next/dynamic";
-import { ReactNode } from "react";
+﻿"use client";
 
-const BrainPanel = dynamic(() => import("@/components/BrainPanel"), { ssr: false });
-const DebugPanelWrapper = dynamic(() => import("@/components/DebugPanelWrapper"), { ssr: false });
+import BrainPanel from "@/components/BrainPanel/index";
+import DebugPanelWrapper from "@/components/DebugPanelWrapper";
 
 export function ClientProviders() {
   return (
     <>
-
       <BrainPanel />
       <DebugPanelWrapper />
     </>
   );
 }
-
