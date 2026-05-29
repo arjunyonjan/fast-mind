@@ -1,8 +1,16 @@
 ﻿"use client";
+
+import { useTheme } from "@/components/ThemeProvider";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Brain, Layers, Box, Grid, Zap, Clock, Heart, Activity, Droplets, Eye, Moon } from "lucide-react";
 
 export default function BrainPanelDocs() {
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+  const isDark = theme === "dark"; {
   return (
     <div className="min-h-screen bg-zinc-950">
       <div className="max-w-4xl mx-auto px-6 py-10">
@@ -75,4 +83,5 @@ dump            # Project snapshot</pre>
       </div>
     </div>
   );
+}
 }
