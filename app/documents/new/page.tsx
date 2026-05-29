@@ -34,7 +34,7 @@ export default function NewDocumentPage() {
       const data = await res.json();
       if (data.success) {
         showToast("Document created!", "success");
-        router.push(`/documents/${data.document.id}`);
+        router.push(`/documents/${data.document._id}`);
       } else { showToast(data.error || "Failed", "error"); setLoading(false); }
     } catch { showToast("Failed", "error"); setLoading(false); }
   }
