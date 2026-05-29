@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, X } from "lucide-react";
@@ -38,6 +38,18 @@ export default function NewDocumentPage() {
       } else { showToast(data.error || "Failed", "error"); setLoading(false); }
     } catch { showToast("Failed", "error"); setLoading(false); }
   }
+
+  // Ctrl+S to save
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        handleSubmit(e as unknown as React.FormEvent);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [title, content]);
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-zinc-50 dark:bg-zinc-950">
