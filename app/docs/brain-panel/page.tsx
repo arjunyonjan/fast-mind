@@ -4,20 +4,20 @@ import { ArrowLeft, Brain, Layers, Box, Grid, Zap, Clock, Heart, Activity, Dropl
 
 export default function BrainPanelDocs() {
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950">
+    <div className="min-h-screen bg-zinc-950">
       <div className="max-w-4xl mx-auto px-6 py-10">
         <Link href="/docs" className="text-sm text-cyan-500 hover:text-cyan-400 flex items-center gap-1 mb-6"><ArrowLeft size={14} /> Back to Docs</Link>
         
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-cyan-500"><Brain size={24} className="text-white" /></div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Brain Panel Architecture</h1>
+          <h1 className="text-3xl font-bold text-white">Brain Panel Architecture</h1>
         </div>
 
-        <div className="prose prose-zinc dark:prose-invert max-w-none">
-          <p className="text-zinc-500 dark:text-zinc-400">Modular React component system for real-time brain health tracking.</p>
+        <div className="prose prose-invert max-w-none max-w-none">
+          <p className="text-gray-500">Modular React component system for real-time brain health tracking.</p>
 
           <h2>📁 Folder Structure</h2>
-          <pre className="bg-zinc-900 text-zinc-300 p-4 rounded-lg text-sm">components/BrainPanel/
+          <pre className="bg-black text-gray-300 p-4 rounded-lg text-sm">components/BrainPanel/
 ├── index.tsx (Orchestrator)
 ├── types.ts
 ├── hooks/
@@ -68,7 +68,7 @@ export default function BrainPanelDocs() {
           <p>10 traps (digital + human): Social Media, Video Binge, Doom Scrolling, Mobile Games, Online Shopping, Overthinking, Perfectionism, Task-Switching, Social Chatting, Tomorrow Syndrome + 25-min Pomodoro timer.</p>
 
           <h2>🔧 Commands</h2>
-          <pre className="bg-zinc-900 text-zinc-300 p-4 rounded-lg text-sm">npm run dev     # Start dev server
+          <pre className="bg-black text-gray-300 p-4 rounded-lg text-sm">npm run dev     # Start dev server
 npm run build   # Production build
 dump            # Project snapshot</pre>
         </div>
