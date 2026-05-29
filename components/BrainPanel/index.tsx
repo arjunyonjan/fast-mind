@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import { Brain, X } from "lucide-react";
 import { useBrainState } from "./hooks/useBrainState";
@@ -96,13 +96,17 @@ export default function BrainPanel() {
       <button onClick={() => toggleOpen(true)} className="fixed z-[9998] p-3.5 rounded-full shadow-lg top-1/2 right-4 -translate-y-1/2 bg-green-500 animate-pulse-glow"><Brain size={26} className="text-white" /></button>
       {state.open && (
         <div className="fixed z-[9999] inset-0 sm:inset-y-0 sm:right-0 sm:left-auto flex flex-col bg-zinc-900 border-l border-zinc-800 shadow-2xl animate-slide-in" style={{ width: state.isFullscreen ? "100%" : state.panelWidth }}>
-          <ProcrastinationModule />
-          <div className="flex items-center justify-between p-4 sm:p-5 pb-3 shrink-0 border-b border-zinc-800">
-            <h2 className="text-sm font-semibold text-white flex items-center gap-2"><Brain size={16} className="text-purple-400" />YOUR BRAIN</h2>
-            <div className="flex items-center gap-1"><FullscreenButton isFullscreen={state.isFullscreen} toggleFullscreen={toggleFullscreen} /><button onClick={() => toggleOpen(false)} className="p-1.5 rounded text-zinc-500 hover:text-white"><X size={18} /></button></div>
-          </div>
-          <div className="flex-1 overflow-y-auto px-5 sm:px-6 pb-6 space-y-4">
+          {/* Fixed header: title bar + procrastination + metrics */}
+          <div className="shrink-0">
+            <div className="flex items-center justify-between p-4 sm:p-5 pb-3 border-b border-zinc-800">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2"><Brain size={16} className="text-purple-400" />YOUR BRAIN</h2>
+              <div className="flex items-center gap-1"><FullscreenButton isFullscreen={state.isFullscreen} toggleFullscreen={toggleFullscreen} /><button onClick={() => toggleOpen(false)} className="p-1.5 rounded text-zinc-500 hover:text-white"><X size={18} /></button></div>
+            </div>
+            <ProcrastinationModule />
             <MetricsGrid brainHealth={state.brainHealth} hc={hc} eyeStrain={state.eyeStrain} ec={ec} digestionPhase={digestionPhase} energyLevel={energyLevel} energyColor={energyColor} glymphaticPercent={state.glymphaticPercent} vasodilationPercent={state.vasodilationPercent} />
+          </div>
+          {/* Scrollable body */}
+          <div className="flex-1 overflow-y-auto px-5 sm:px-6 pb-6 space-y-4">
             <CircadianCard currentTime={state.currentTime} circadian={circadian} isAwake={state.isAwake} toggleAwake={toggleAwake} />
             <TimeSimulator isLive={state.isLive} simHour={state.simHour} hour={hour} toggleLive={toggleLive} setSimHour={state.setSimHour} />
             <MoodCard mood={state.mood} collapsedCards={state.collapsedCards} toggleCard={toggleCard} saveMood={saveMood} />
@@ -117,7 +121,7 @@ export default function BrainPanel() {
           </div>
         </div>
       )}
-      {!state.isFullscreen && <ResizeHandle panelWidth={state.panelWidth} onResize={onResize} />}
+      {state.open && !state.isFullscreen && <ResizeHandle panelWidth={state.panelWidth} onResize={onResize} />}
       <InfoPopup infoPopup={infoPopup} setInfoPopup={setInfoPopup} />
     </>
   );

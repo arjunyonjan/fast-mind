@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Send, FileText, Sparkles, Bot, User, ArrowRight, RotateCcw, MessageSquare } from 'lucide-react';
+import { Send, FileText, Sparkles, Bot, User, ArrowRight, RotateCcw, MessageSquare, Trash2 } from 'lucide-react';
 
 interface Message { id: string; role: 'user' | 'assistant'; content: string; timestamp?: number; }
 interface Document { _id: string; title: string; content: string; updatedAt: string; }
@@ -98,6 +98,19 @@ export default function Home() {
     if (sessionId) localStorage.removeItem(`chat-messages-${sessionId}`);
     setInput('');
     inputRef.current?.focus();
+  };
+
+  const clearChat = () => {
+    if (messages.length === 0) return;
+    if (!confirm('Clear the entire conversation?')) return;
+    if (sessionId) {
+      localStorage.removeItem(`chat-messages-${sessionId}`);
+      navigator.sendBeacon
+        ? navigator.sendBeacon('/api/chat-session', JSON.stringify({ sessionId, messages: [] }))
+        : fetch('/api/chat-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId, messages: [] }), keepalive: true });
+    }
+    setMessages([]);
+    setInput('');
   };
 
   const handleSend = async (text?: string) => {
@@ -234,6 +247,9 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <button onClick={startNewChat} className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition">
                 <RotateCcw size={14} /> New chat
+              </button>
+              <button onClick={clearChat} className="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition" title="Clear conversation">
+                <Trash2 size={14} /> Clear
               </button>
             </div>
             <div className="flex items-center gap-2">

@@ -45,3 +45,12 @@ next-env.d.ts
 .env
 .env.local
 code-dump-*.txt
+
+# backup files
+*.bak
+*.bak2
+*.bak3
+*.backup
+*.backup-*
+*.safe-bak
+*.final-backup
