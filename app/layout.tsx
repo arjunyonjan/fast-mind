@@ -18,14 +18,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 dark:bg-zinc-950 h-screen overflow-hidden">
+      <body className="bg-gray-50 dark:bg-zinc-950 min-h-screen">
         <ThemeProvider>
           <ToastProvider>
             <MobileMenuButton />
-            <div className="flex h-screen">
+            <div className="flex min-h-screen">
               <AppSidebar />
-              <div className="flex-1 min-w-0 flex flex-col h-screen">
-                <main className="flex-1 min-h-0 h-full">{children}</main>
+              <div className="flex-1 min-w-0 flex flex-col">
+                <main className="flex-1 min-h-0">{children}</main>
               </div>
             </div>
             <ClientProviders />
