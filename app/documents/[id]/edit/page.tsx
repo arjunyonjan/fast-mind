@@ -5,11 +5,11 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import RingLoader from "@/components/RingLoader";
 import { useToast } from "@/components/ToastProvider";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, X } from "lucide-react";
 
 const AdvancedEditor = dynamic(() => import("@/components/editor/AdvancedEditor"), {
   ssr: false,
-  loading: () => <div className="border rounded-xl"><div className="h-12 bg-gray-100 animate-pulse" /><div className="h-[400px] bg-gray-50 animate-pulse" /></div>
+  loading: () => <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl"><div className="h-12 bg-zinc-100 dark:bg-zinc-900 animate-pulse" /><div className="h-[400px] bg-zinc-50 dark:bg-zinc-900/50 animate-pulse" /></div>
 });
 
 export default function EditDocumentPage() {
@@ -60,32 +60,70 @@ export default function EditDocumentPage() {
   if (loading) return <RingLoader />;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <Link href={`/documents/${id}`} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6">
-        <ArrowLeft size={18} /> Back
-      </Link>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full text-4xl font-bold text-gray-900 border-0 focus:outline-none focus:ring-0 p-0 mb-6"
-          placeholder="Document title..."
-        />
-        <AdvancedEditor content={content} onChange={setContent} />
-        <div className="flex gap-3 mt-6 sticky bottom-4 bg-white/80 backdrop-blur-sm p-4 rounded-xl border">
+    <div className="flex flex-col h-full min-h-0 bg-zinc-50 dark:bg-zinc-950">
+      {/* Top bar — shrink-0 so it stays fixed */}
+      <div className="border-b border-zinc-200 dark:border-zinc-800 px-4 sm:px-6 py-2.5 shrink-0 bg-white dark:bg-zinc-900">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/documents/${id}`}
+              className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 transition"
+            >
+              <ArrowLeft size={16} />
+            </Link>
+            <span className="text-sm text-zinc-400 dark:text-zinc-500">Editing</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push(`/documents/${id}`)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition"
+            >
+              <X size={14} />
+              <span className="hidden sm:inline">Discard</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Scrollable editor area */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4 sm:px-8 py-8 sm:py-10">
+          {/* Title input */}
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white border-0 focus:outline-none focus:ring-0 p-0 mb-8 bg-transparent placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
+            placeholder="Document title..."
+          />
+
+          {/* Editor */}
+          <AdvancedEditor content={content} onChange={setContent} />
+
+          {/* Spacer so save bar doesn't overlap content */}
+          <div className="h-4" />
+        </form>
+      </div>
+
+      {/* Save bar — sticky at bottom */}
+      <div className="border-t border-zinc-200 dark:border-zinc-800 px-4 sm:px-6 py-3 shrink-0 bg-white dark:bg-zinc-900">
+        <div className="max-w-4xl mx-auto flex gap-3">
           <button
             type="submit"
+            onClick={handleSubmit}
             disabled={saving}
-            className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-3 rounded-xl font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-2.5 rounded-xl font-medium disabled:opacity-50 flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-cyan-500/20 transition-all text-sm"
           >
-            <Save size={18} /> {saving ? "Saving..." : "Save Changes"}
+            <Save size={16} /> {saving ? "Saving..." : "Save Changes"}
           </button>
-          <Link href={`/documents/${id}`} className="px-6 py-3 border rounded-xl text-gray-700 hover:bg-gray-50 text-center">
+          <Link
+            href={`/documents/${id}`}
+            className="px-6 py-2.5 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-center transition"
+          >
             Cancel
           </Link>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
