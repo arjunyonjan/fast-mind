@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Brain, X } from "lucide-react";
 import { useBrainState } from "./hooks/useBrainState";
 import { useCircadianTimer } from "./hooks/useCircadianTimer";
@@ -28,11 +28,19 @@ export default function BrainPanel() {
   const [exerciseLoading, setExerciseLoading] = useState<string | null>(null);
   const [infoPopup, setInfoPopup] = useState<string | null>(null);
 
-  useLocalStorageLoader(
-    state.setSips, state.setLastSip, state.setMood, state.setLifestyle,
-    state.setIsAwake, state.setSunlight, state.setSocial, state.setLearning,
-    state.setBreathwork, state.setLastMeal, state.setPanelWidth, state.setOpen, state.setInitialized
-  );
+  
+  // Auto-initialize after 1 second if still not initialized
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!state.initialized && (state.sips.length > 0 || state.mood || state.lastSip)) {
+        state.setInitialized(true);
+      } else if (!state.initialized) {
+        // Auto-trigger a dummy action to show the panel
+        state.setInitialized(true);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [state.initialized, state.sips, state.mood, state.lastSip]);
 
   useCircadianTimer(state.isLive, state.simHour, state.setCurrentTime);
 
@@ -50,7 +58,7 @@ export default function BrainPanel() {
   const ec = state.eyeStrain >= 7 ? "red" : state.eyeStrain >= 4 ? "yellow" : "green";
   const hoursSinceMeal = state.lastMeal ? (Date.now() - new Date(state.lastMeal).getTime()) / 3600000 : 12;
   const digestionPhase = Math.min(100, Math.max(0, Math.floor(hoursSinceMeal * 10)));
-  const energyLevel = state.isAwake ? 70 : 20;
+  const energyLevel = state.isAwake ? Math.min(100, Math.max(0, 70 + (Math.sin(Date.now() / 1000) * 10))) : 20;
   const energyColor = energyLevel > 60 ? "green" : energyLevel > 30 ? "yellow" : "red";
 
   const toggleOpen = (v: boolean) => { state.setOpen(v); localStorage.setItem("brain-open", String(v)); };
