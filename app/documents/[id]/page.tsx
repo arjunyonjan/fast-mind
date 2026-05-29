@@ -96,6 +96,19 @@ export default function ViewDocumentPage() {
       });
   }, [id]);
 
+  // Strip inline color/background styles synchronously after DOM updates
+  useLayoutEffect(() => {
+    if (!contentRef.current) return;
+    const all = contentRef.current.querySelectorAll('*');
+    all.forEach(el => {
+      const s = (el as HTMLElement).style;
+      if (s.color) s.color = '';
+      if (s.backgroundColor) s.backgroundColor = '';
+      if (s.background) s.background = '';
+      if (s.borderLeftColor) s.borderLeftColor = '';
+    });
+  }, [doc?.content, doc?._id]);
+
   async function handleDelete() {
     setShowModal(false);
     const res = await fetch(`/api/documents/${id}`, { method: "DELETE" });
@@ -113,19 +126,6 @@ export default function ViewDocumentPage() {
 
   const wc = wordCount(doc.content);
   const text = stripHtml(doc.content);
-
-  // Strip inline color/background styles synchronously after DOM updates
-  useLayoutEffect(() => {
-    if (!contentRef.current) return;
-    const all = contentRef.current.querySelectorAll('*');
-    all.forEach(el => {
-      const s = (el as HTMLElement).style;
-      if (s.color) s.color = '';
-      if (s.backgroundColor) s.backgroundColor = '';
-      if (s.background) s.background = '';
-      if (s.borderLeftColor) s.borderLeftColor = '';
-    });
-  }, [doc?.content, doc?._id]);
 
   return (
     <>
