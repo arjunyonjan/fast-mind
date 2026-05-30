@@ -1,4 +1,10 @@
-"use client"; import { useState, useEffect } from "react"; import Link from "next/link"; import { usePathname } from "next/navigation"; import { FileText, LayoutGrid, Home, PanelLeftClose, PanelLeft, Zap, Sun, Moon, RefreshCw, FileImage, BarChart3, Brain, Camera } from "lucide-react"; import { useTheme } from "@/components/ThemeProvider"; import DeepSeekIcon from "@/components/DeepSeekIcon";
+﻿"use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { FileText, LayoutGrid, Home, PanelLeftClose, PanelLeft, Zap, Sun, Moon, RefreshCw, FileImage, Brain } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
+import DeepSeekIcon from "@/components/DeepSeekIcon";
 
 export default function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -6,12 +12,20 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const { theme, toggle } = useTheme();
   const [dsOnline, setDsOnline] = useState<boolean | null>(null);
+  const [dsBalance, setDsBalance] = useState<number | null>(null);
   const [dsChecking, setDsChecking] = useState(false);
 
   const checkDS = async () => {
     setDsChecking(true);
-    try { const r = await fetch("/api/deepseek-status"); const j = await r.json(); setDsOnline(j.online); }
-    catch { setDsOnline(false); }
+    try {
+      const r = await fetch("/api/deepseek-status");
+      const j = await r.json();
+      setDsOnline(j.online);
+      setDsBalance(j.balance ?? null);
+    } catch {
+      setDsOnline(false);
+      setDsBalance(null);
+    }
     setDsChecking(false);
   };
 
@@ -39,20 +53,40 @@ export default function AppSidebar() {
           <button onClick={() => setCollapsed(!collapsed)} className="ml-auto p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 shrink-0">{collapsed ? <PanelLeft size={15} /> : <PanelLeftClose size={15} />}</button>
         </div>
         <nav className="flex-1 px-2 py-3 space-y-0.5">
-          <div className="px-3 py-1 mt-2 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">📚 DOCS</div>
-          <Link href="/" className={link("/")} title="Home"><Home size={17} />{!collapsed && <span>Home</span>}</Link>
-          <Link href="/documents" className={link("/documents")} title="Documents"><FileText size={17} />{!collapsed && <span>Documents</span>}</Link>
-          <Link href="/tasks" className={link("/tasks")} title="Tasks"><LayoutGrid size={17} />{!collapsed && <span>Tasks</span>}</Link>
-          <Link href="/diagrams" className={link("/diagrams")} title="Diagrams"><FileImage size={17} />{!collapsed && <span>Diagrams</span>}</Link>
-          <Link href="/cloudinary-gallery" className={link("/cloudinary-gallery")} title="Gallery"><Camera size={17} />{!collapsed && <span>Gallery</span>}</Link>
-          
-          <Link href="/docs" className={link("/docs")} title="Technical Documentation"><FileText size={17} />{!collapsed && <span>Technical Documentation</span>}</Link>
-          <Link href="/docs/brain-panel" className={link("/docs/brain-panel")} title="Brain Panel Docs"><Brain size={17} />{!collapsed && <span>Brain Panel</span>}</Link>
+          <div className="px-3 py-1 mt-2 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">DOCS</div>
+          <Link href="/" className={link("/")}><Home size={17} />{!collapsed && <span>Home</span>}</Link>
+          <Link href="/documents" className={link("/documents")}><FileText size={17} />{!collapsed && <span>Documents</span>}</Link>
+          <Link href="/tasks" className={link("/tasks")}><LayoutGrid size={17} />{!collapsed && <span>Tasks</span>}</Link>
+          <Link href="/diagrams" className={link("/diagrams")}><FileImage size={17} />{!collapsed && <span>Diagrams</span>}</Link>
+          <Link href="/docs" className={link("/docs")}><FileText size={17} />{!collapsed && <span>Technical Documentation</span>}</Link>
+          <Link href="/docs/brain-panel" className={link("/docs/brain-panel")}><Brain size={17} />{!collapsed && <span>Brain Panel</span>}</Link>
         </nav>
         <div className="px-2 py-3 border-t border-zinc-100 dark:border-zinc-800 space-y-1">
-          {!collapsed && dsOnline !== null && (<div className={`flex items-center gap-2 px-3 py-2 text-xs ${dsOnline ? "text-emerald-500" : "text-red-400"}`}><DeepSeekIcon size={12} className={dsOnline ? "text-emerald-500" : "text-red-400"} /><span>{dsOnline ? "AI online" : "AI offline"}</span><button onClick={checkDS} className="ml-auto p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 transition">{dsChecking ? <span className="w-2.5 h-2.5 border border-current border-t-transparent rounded-full animate-spin inline-block" /> : <RefreshCw size={10} />}</button></div>)}
-          {!collapsed && (<a href="https://platform.deepseek.com/usage" target="_blank" rel="noopener" className="flex items-center gap-3 px-3 py-2 text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"><DeepSeekIcon size={12} className="text-[#4D6BFE]" /> DeepSeek Usage →</a>)}
-          <button onClick={toggle} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition" title={theme === "dark" ? "Switch to light" : "Switch to dark"}>{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}{!collapsed && (theme === "dark" ? "Light mode" : "Dark mode")}</button>
+          {!collapsed && dsOnline !== null && (
+            <div className="flex flex-col gap-1 px-3 py-2 text-xs">
+              <div className={`flex items-center gap-2 ${dsOnline ? "text-emerald-500" : "text-red-400"}`}>
+                <DeepSeekIcon size={12} className={dsOnline ? "text-emerald-500" : "text-red-400"} />
+                <span>{dsOnline ? "AI online" : "AI offline"}</span>
+                <button onClick={checkDS} className="ml-auto p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 transition">
+                  {dsChecking ? <span className="w-2.5 h-2.5 border border-current border-t-transparent rounded-full animate-spin inline-block" /> : <RefreshCw size={10} />}
+                </button>
+              </div>
+              {dsBalance !== null && dsBalance < 1 && dsBalance > 0 && (
+                <div className="text-amber-400 text-[10px]">Warning: Balance ${dsBalance.toFixed(2)} - Low credits</div>
+              )}
+              {dsBalance !== null && dsBalance === 0 && (
+                <div className="text-red-400 text-[10px]">Error: Balance $0.00 - Add credits</div>
+              )}
+            </div>
+          )}
+          {!collapsed && (
+            <a href="https://platform.deepseek.com/usage" target="_blank" rel="noopener" className="flex items-center gap-3 px-3 py-2 text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition">
+              <DeepSeekIcon size={12} className="text-[#4D6BFE]" /> DeepSeek Usage →
+            </a>
+          )}
+          <button onClick={toggle} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition">
+            {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}{!collapsed && (theme === "dark" ? "Light mode" : "Dark mode")}
+          </button>
         </div>
       </aside>
     </>

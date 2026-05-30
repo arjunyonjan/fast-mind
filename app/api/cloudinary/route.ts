@@ -5,7 +5,7 @@ export async function GET() {
   const apiKey = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-  // Check all required environment variables
+  // Check if credentials exist
   if (!cloudName || !apiKey || !apiSecret) {
     const missing = [];
     if (!cloudName) missing.push('CLOUDINARY_CLOUD_NAME');
@@ -13,13 +13,13 @@ export async function GET() {
     if (!apiSecret) missing.push('CLOUDINARY_API_SECRET');
     
     return NextResponse.json(
-      { error: 'Missing Cloudinary configuration', missing: missing },
+      { error: 'Missing Cloudinary configuration', missing: missing, images: [] },
       { status: 500 }
     );
   }
 
   const auth = Buffer.from(apiKey + ':' + apiSecret).toString('base64');
-  const url = 'https://api.cloudinary.com/v1_1/' + cloudName + '/resources/image?max_results=100';
+  const url = `https://api.cloudinary.com/v1_1/${cloudName}/resources/image?max_results=100`;
 
   try {
     const response = await fetch(url, {
@@ -31,28 +31,26 @@ export async function GET() {
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: 'Cloudinary API error: ' + response.status },
+        { error: 'Cloudinary API error: ' + response.status, images: [] },
         { status: response.status }
       );
     }
 
     const data = await response.json();
-    const images = (data.resources || []).map(function(r) {
-      return {
-        public_id: r.public_id,
-        url: r.secure_url,
-        width: r.width,
-        height: r.height,
-        format: r.format,
-        created_at: r.created_at
-      };
-    });
+    const images = (data.resources || []).map((r: any) => ({
+      public_id: r.public_id,
+      url: r.secure_url,
+      width: r.width,
+      height: r.height,
+      format: r.format,
+      created_at: r.created_at
+    }));
 
     return NextResponse.json({ images: images });
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : 'Failed to fetch from Cloudinary';
     return NextResponse.json(
-      { error: errorMsg },
+      { error: errorMsg, images: [] },
       { status: 502 }
     );
   }
