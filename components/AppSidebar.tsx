@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutGrid, Home, PanelLeftClose, PanelLeft, Zap, Sun, Moon, RefreshCw, FileImage, Brain } from "lucide-react";
+import { FileText, LayoutGrid, Home, PanelLeftClose, PanelLeft, Zap, Sun, Moon, RefreshCw, FileImage, Brain, ImageIcon} from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import DeepSeekIcon from "@/components/DeepSeekIcon";
 
@@ -60,6 +60,10 @@ export default function AppSidebar() {
           <Link href="/diagrams" className={link("/diagrams")}><FileImage size={17} />{!collapsed && <span>Diagrams</span>}</Link>
           <Link href="/docs" className={link("/docs")}><FileText size={17} />{!collapsed && <span>Technical Documentation</span>}</Link>
           <Link href="/docs/brain-panel" className={link("/docs/brain-panel")}><Brain size={17} />{!collapsed && <span>Brain Panel</span>}</Link>
+          <Link href="/cloudinary-gallery" className={link("/cloudinary-gallery")}>
+  <ImageIcon size={17} />
+  {!collapsed && <span>Gallery</span>}
+</Link>
         </nav>
         <div className="px-2 py-3 border-t border-zinc-100 dark:border-zinc-800 space-y-1">
           {!collapsed && dsOnline !== null && (
