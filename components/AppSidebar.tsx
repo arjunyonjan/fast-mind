@@ -1,4 +1,4 @@
-﻿"use client"; import { useState, useEffect } from "react"; import Link from "next/link"; import { usePathname } from "next/navigation"; import { FileText, LayoutGrid, Home, PanelLeftClose, PanelLeft, Zap, Sun, Moon, RefreshCw, FileImage, BarChart3, Brain } from "lucide-react"; import { useTheme } from "@/components/ThemeProvider"; import DeepSeekIcon from "@/components/DeepSeekIcon";
+"use client"; import { useState, useEffect } from "react"; import Link from "next/link"; import { usePathname } from "next/navigation"; import { FileText, LayoutGrid, Home, PanelLeftClose, PanelLeft, Zap, Sun, Moon, RefreshCw, FileImage, BarChart3, Brain, Camera } from "lucide-react"; import { useTheme } from "@/components/ThemeProvider"; import DeepSeekIcon from "@/components/DeepSeekIcon";
 
 export default function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -44,6 +44,7 @@ export default function AppSidebar() {
           <Link href="/documents" className={link("/documents")} title="Documents"><FileText size={17} />{!collapsed && <span>Documents</span>}</Link>
           <Link href="/tasks" className={link("/tasks")} title="Tasks"><LayoutGrid size={17} />{!collapsed && <span>Tasks</span>}</Link>
           <Link href="/diagrams" className={link("/diagrams")} title="Diagrams"><FileImage size={17} />{!collapsed && <span>Diagrams</span>}</Link>
+          <Link href="/cloudinary-gallery" className={link("/cloudinary-gallery")} title="Gallery"><Camera size={17} />{!collapsed && <span>Gallery</span>}</Link>
           
           <Link href="/docs" className={link("/docs")} title="Technical Documentation"><FileText size={17} />{!collapsed && <span>Technical Documentation</span>}</Link>
           <Link href="/docs/brain-panel" className={link("/docs/brain-panel")} title="Brain Panel Docs"><Brain size={17} />{!collapsed && <span>Brain Panel</span>}</Link>
