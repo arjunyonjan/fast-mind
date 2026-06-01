@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Sparkles, Home, FileText, LayoutGrid, Brain, Activity, BarChart, MessageSquare, LayoutPanelTop, ImageIcon, PanelLeft, PanelLeftClose, FileImage, Sun, Moon, RefreshCw, AlertCircle, Zap } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import DeepSeekIcon from "@/components/DeepSeekIcon";
@@ -9,7 +9,7 @@ import DeepSeekIcon from "@/components/DeepSeekIcon";
 export default function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const pathname = usePathname();
+  const pathname = usePathname(); const searchParams = useSearchParams();
   const { theme, toggle } = useTheme();
   const [dsOnline, setDsOnline] = useState<boolean | null>(null);
   const [dsBalance, setDsBalance] = useState<number | null>(null);
@@ -41,7 +41,14 @@ export default function AppSidebar() {
     return () => clearInterval(i);
   }, []);
 
-  const link = (href: string) => `flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition whitespace-nowrap ${pathname === href ? "bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 font-medium" : "text-zinc-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200"}`;
+    const link = (href: string, checkQuery?: { key: string; value: string }) => {
+    const matchPath = pathname === href.split('?')[0];
+    const matchQuery = checkQuery ? searchParams.get(checkQuery.key) === checkQuery.value : true;
+    const isActive = matchPath && matchQuery;
+    return `flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition whitespace-nowrap ${
+      isActive ? "bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 font-medium" : "text-zinc-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200"
+    }`;
+  };
 
   return (
     <>
@@ -86,7 +93,7 @@ export default function AppSidebar() {
           )}
           {!collapsed && (
             <a href="https://platform.deepseek.com/usage" target="_blank" rel="noopener" className="flex items-center gap-3 px-3 py-2 text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition">
-              <DeepSeekIcon size={12} className="text-[#4D6BFE]" /> DeepSeek Usage →
+              <DeepSeekIcon size={12} className="text-[#4D6BFE]" /> DeepSeek Usage â†’
             </a>
           )}
           <button onClick={toggle} className="flex items-center gap-3 w-full px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition">

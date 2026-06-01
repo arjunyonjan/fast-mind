@@ -27,12 +27,78 @@ const STATUS_CONFIG = {
   failed: { color: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-900/20", label: "Failed" },
 };
 
-export default function TasksPage() {
+export default function TasksPage() { 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [view, setView] = useState<"grid" | "list">("list");
-  const [filter, setFilter] = useState<"all" | "pending" | "completed" | "failed">("all");
+const [filter, setFilter] = useState<"all" | "pending" | "completed" | "failed">("all");
+
+useEffect(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlFilter = urlParams.get("filter");
+  if (urlFilter === "pending" || urlFilter === "completed" || urlFilter === "failed") {
+    setFilter(urlFilter);
+  }
+}, []);
+
+useEffect(() => {
+  const url = new URL(window.location.href);
+  if (filter === "all") {
+    url.searchParams.delete("filter");
+  } else {
+    url.searchParams.set("filter", filter);
+  }
+  window.history.replaceState({}, "", url.toString());
+}, [filter]);
+
+
+
+useEffect(() => {
+  const url = new URL(window.location.href);
+  if (filter === "all") {
+    url.searchParams.delete("filter");
+  } else {
+    url.searchParams.set("filter", filter);
+  }
+  window.history.replaceState({}, "", url.toString());
+}, [filter]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlFilter = urlParams.get("filter");
+    if (urlFilter === "pending" || urlFilter === "completed" || urlFilter === "failed") {
+      setFilter(urlFilter);
+    }
+  }, []);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (filter === "all") {
+      url.searchParams.delete("filter");
+    } else {
+      url.searchParams.set("filter", filter);
+    }
+    window.history.replaceState({}, "", url.toString());
+  }, [filter]);
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlFilter = urlParams.get("filter");
+    if (urlFilter === "pending" || urlFilter === "completed" || urlFilter === "failed") {
+      setFilter(urlFilter);
+    }
+  }, []);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (filter === "all") {
+      url.searchParams.delete("filter");
+    } else {
+      url.searchParams.set("filter", filter);
+    }
+    window.history.replaceState({}, "", url.toString());
+  }, [filter]);
+    
+
   const [marking, setMarking] = useState<string | null>(null);
   const [spaces, setSpaces] = useState<{ _id: string; name: string }[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
