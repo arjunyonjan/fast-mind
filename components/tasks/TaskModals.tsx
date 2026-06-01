@@ -2,7 +2,7 @@
 import { X, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 
-const PRIORITY_CONFIG = {
+const PRIORITY_CONFIG: Record<string, { bg: string; color: string; label: string }> = {
   high: { bg: "bg-red-50 dark:bg-red-900/20", color: "text-red-500", label: "Urgent" },
   medium: { bg: "bg-amber-50 dark:bg-amber-900/20", color: "text-amber-500", label: "Medium" },
   low: { bg: "bg-blue-50 dark:bg-blue-900/20", color: "text-blue-500", label: "Low" },
@@ -42,10 +42,6 @@ export function CreateTaskModal({ isOpen, onClose, onCreate }: CreateModalProps)
             <X size={16} />
           </button>
         </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> feature/tasks-modular-ui
         <input
           autoFocus
           value={title}
@@ -54,10 +50,6 @@ export function CreateTaskModal({ isOpen, onClose, onCreate }: CreateModalProps)
           className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 outline-none mb-3 border border-zinc-200 dark:border-zinc-700 focus:border-violet-400 transition"
           placeholder="Task title..."
         />
-<<<<<<< HEAD
-=======
-
->>>>>>> feature/tasks-modular-ui
         <textarea
           value={desc}
           onChange={e => setDesc(e.target.value)}
@@ -65,33 +57,18 @@ export function CreateTaskModal({ isOpen, onClose, onCreate }: CreateModalProps)
           rows={3}
           placeholder="Description (optional)..."
         />
-<<<<<<< HEAD
-=======
-
->>>>>>> feature/tasks-modular-ui
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xs text-zinc-400">Priority:</span>
           {(["low", "medium", "high"] as const).map(p => (
             <button
               key={p}
               onClick={() => setPriority(p)}
-<<<<<<< HEAD
-              className={"px-2.5 py-1 text-xs rounded-lg font-medium transition " + (priority === p ? PRIORITY_CONFIG[p].bg + " " + PRIORITY_CONFIG[p].color : "text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800")}
-=======
-              className={"px-2.5 py-1 text-xs rounded-lg font-medium transition " +
-                (priority === p
-                  ? PRIORITY_CONFIG[p].bg + " " + PRIORITY_CONFIG[p].color
-                  : "text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800")}
->>>>>>> feature/tasks-modular-ui
+              className={`px-2.5 py-1 text-xs rounded-lg font-medium transition ${priority === p ? PRIORITY_CONFIG[p].bg + " " + PRIORITY_CONFIG[p].color : "text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`}
             >
               {PRIORITY_CONFIG[p].label}
             </button>
           ))}
         </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> feature/tasks-modular-ui
         <div className="flex gap-2 justify-end">
           <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
             Cancel
@@ -149,20 +126,12 @@ export function EditTaskModal({ task, onClose, onSave }: EditModalProps) {
             <X size={16} />
           </button>
         </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> feature/tasks-modular-ui
         <input
           value={title}
           onChange={e => setTitle(e.target.value)}
           className="w-full bg-zinc-50 dark:bg-zinc-800 rounded-lg px-3 py-2.5 text-sm text-zinc-800 dark:text-zinc-200 outline-none mb-3 border border-zinc-200 dark:border-zinc-700 focus:border-violet-400 transition"
           placeholder="Title"
         />
-<<<<<<< HEAD
-=======
-
->>>>>>> feature/tasks-modular-ui
         <textarea
           value={desc}
           onChange={e => setDesc(e.target.value)}
@@ -170,30 +139,18 @@ export function EditTaskModal({ task, onClose, onSave }: EditModalProps) {
           rows={3}
           placeholder="Description..."
         />
-<<<<<<< HEAD
-=======
-
->>>>>>> feature/tasks-modular-ui
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xs text-zinc-400">Priority:</span>
           {(["low", "medium", "high"] as const).map(p => (
             <button
               key={p}
               onClick={() => setPriority(p)}
-<<<<<<< HEAD
-              className={"px-2.5 py-1 text-xs rounded-lg font-medium transition " + (priority === p ? PRIORITY_CONFIG[p].bg + " " + PRIORITY_CONFIG[p].color : "text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800")}
-=======
-              className={'px-2.5 py-1 text-xs rounded-lg font-medium transition ' + (priority === p ? PRIORITY_CONFIG[p].bg + " " + PRIORITY_CONFIG[p].color : "text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800")}
->>>>>>> feature/tasks-modular-ui
+              className={`px-2.5 py-1 text-xs rounded-lg font-medium transition ${priority === p ? PRIORITY_CONFIG[p].bg + " " + PRIORITY_CONFIG[p].color : "text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"}`}
             >
               {PRIORITY_CONFIG[p].label}
             </button>
           ))}
         </div>
-<<<<<<< HEAD
-=======
-
->>>>>>> feature/tasks-modular-ui
         <div className="flex gap-2 justify-end">
           <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
             Cancel

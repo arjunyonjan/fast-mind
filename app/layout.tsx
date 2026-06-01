@@ -1,5 +1,8 @@
+export const dynamic = 'force-dynamic';
+
 import type { Metadata } from "next";
 import "./globals.css";
+import { Suspense } from "react";
 import { ToastProvider } from "@/components/ToastProvider";
 import ThemeProvider from "@/components/ThemeProvider";
 import { ClientProviders } from "@/components/ClientProviders";
@@ -28,7 +31,9 @@ export default function RootLayout({
                 <main className="flex-1 min-h-0">{children}</main>
               </div>
             </div>
-            <ClientProviders />
+            <Suspense fallback={null}>
+              <ClientProviders />
+            </Suspense>
           </ToastProvider>
         </ThemeProvider>
       </body>

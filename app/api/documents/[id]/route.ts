@@ -1,61 +1,55 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
+import { NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 export async function GET(
-  request: NextRequest,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
   try {
+    const { id } = await params;
     const db = await connectToDatabase();
-    const doc = await db.collection('documents').findOne({ _id: new ObjectId(id) });
+    const doc = await db.collection("documents").findOne({
+      _id: new ObjectId(id)
+    });
     if (!doc) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: "Document not found" },
+        { status: 404 }
+      );
     }
-    return NextResponse.json({ success: true, document: doc });
-  } catch (error) {
-    console.error('GET error:', error);
-    return NextResponse.json({ error: 'Failed to fetch' }, { status: 500 });
-  }
-}
-
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-  try {
-    const { title, content } = await request.json();
-    const db = await connectToDatabase();
-    const result = await db.collection('documents').updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { title, content, updatedAt: new Date() } }
+    return NextResponse.json({
+      success: true,
+      document: {
+        _id: doc._id.toString(),
+        title: doc.title,
+        content: doc.content,
+        updatedAt: doc.updatedAt
+      }
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 }
     );
-    if (result.matchedCount === 0) {
-      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
-    }
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('PUT error:', error);
-    return NextResponse.json({ error: 'Update failed' }, { status: 500 });
   }
 }
 
 export async function DELETE(
-  request: NextRequest,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
   try {
+    const { id } = await params;
     const db = await connectToDatabase();
-    const result = await db.collection('documents').deleteOne({ _id: new ObjectId(id) });
-    if (result.deletedCount === 0) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    }
+    await db.collection("documents").deleteOne({
+      _id: new ObjectId(id)
+    });
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('DELETE error:', error);
-    return NextResponse.json({ error: 'Delete failed' }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 }
+    );
   }
 }

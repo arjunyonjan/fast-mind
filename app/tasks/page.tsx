@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect, useState, useRef } from "react";
 import { LayoutGrid, AlertTriangle, List, Grid3X3, Trash2, Plus, Edit3, Check, ChevronDown, Calendar, Flag, MoreHorizontal, X } from "lucide-react";
 
@@ -14,13 +14,13 @@ interface Task {
   createdAt: string;
 }
 
-const PRIORITY_CONFIG = {
+const PRIORITY_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
   high: { color: "text-red-500", bg: "bg-red-50 dark:bg-red-900/20", label: "Urgent" },
   medium: { color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20", label: "Medium" },
   low: { color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20", label: "Low" },
 };
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
   pending: { color: "text-zinc-600 dark:text-zinc-300", bg: "bg-zinc-100 dark:bg-zinc-800", label: "To Do" },
   "in-progress": { color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-900/20", label: "In Progress" },
   completed: { color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-900/20", label: "Done" },
