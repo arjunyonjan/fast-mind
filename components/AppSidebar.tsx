@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutGrid, Home, PanelLeftClose, PanelLeft, Zap, Sun, Moon, RefreshCw, FileImage, Brain, ImageIcon} from "lucide-react";
+import { Sparkles, Home, FileText, LayoutGrid, Brain, Activity, BarChart, MessageSquare, LayoutPanelTop, ImageIcon, PanelLeft, PanelLeftClose, FileImage, Sun, Moon, RefreshCw, AlertCircle, Zap } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import DeepSeekIcon from "@/components/DeepSeekIcon";
 
@@ -57,6 +57,7 @@ export default function AppSidebar() {
           <Link href="/" className={link("/")}><Home size={17} />{!collapsed && <span>Home</span>}</Link>
           <Link href="/documents" className={link("/documents")}><FileText size={17} />{!collapsed && <span>Documents</span>}</Link>
           <Link href="/tasks" className={link("/tasks")}><LayoutGrid size={17} />{!collapsed && <span>Tasks</span>}</Link>
+              <Link href="/tasks?status=failed" className={link("/tasks?status=failed")}><AlertCircle size={17} />{!collapsed && <span>Failures</span>}</Link>
           <Link href="/diagrams" className={link("/diagrams")}><FileImage size={17} />{!collapsed && <span>Diagrams</span>}</Link>
           <Link href="/docs" className={link("/docs")}><FileText size={17} />{!collapsed && <span>Technical Documentation</span>}</Link>
           <Link href="/docs/brain-panel" className={link("/docs/brain-panel")}><Brain size={17} />{!collapsed && <span>Brain Panel</span>}</Link>
