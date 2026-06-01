@@ -1,5 +1,4 @@
-// app/api/tasks/[id]/route.ts
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
@@ -13,10 +12,10 @@ export async function PATCH(
     const db = await connectToDatabase();
     
     const update: any = {};
+    if (body.status !== undefined) update.status = body.status;
     if (body.title !== undefined) update.title = body.title;
     if (body.description !== undefined) update.description = body.description;
     if (body.priority !== undefined) update.priority = body.priority;
-    if (body.status !== undefined) update.status = body.status;
     if (body.dueDate !== undefined) update.dueDate = body.dueDate;
     update.updatedAt = new Date();
     

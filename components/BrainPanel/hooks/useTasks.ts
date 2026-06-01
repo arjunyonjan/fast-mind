@@ -1,4 +1,5 @@
-﻿import { useState, useEffect, useCallback } from "react";
+// hooks/useTasks.ts
+import { useState, useEffect, useCallback } from "react";
 
 export interface Task {
   _id: string;
@@ -19,10 +20,7 @@ export function useTasks() {
 
   const fetchTasks = useCallback(async () => {
     setLoading(true);
-<<<<<<< HEAD
-=======
     setError(null);
->>>>>>> feature/tasks-modular-ui
     try {
       const res = await fetch("/api/tasks");
       const data = await res.json();
@@ -46,11 +44,7 @@ export function useTasks() {
   }, [fetchTasks]);
 
   const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
-<<<<<<< HEAD
-    const res = await fetch(/api/tasks/, {
-=======
     const res = await fetch(`/api/tasks/${id}`, {
->>>>>>> feature/tasks-modular-ui
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
@@ -60,11 +54,7 @@ export function useTasks() {
   }, [fetchTasks]);
 
   const deleteTask = useCallback(async (id: string) => {
-<<<<<<< HEAD
-    const res = await fetch(/api/tasks/, { method: "DELETE" });
-=======
     const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
->>>>>>> feature/tasks-modular-ui
     if (res.ok) await fetchTasks();
     return res.ok;
   }, [fetchTasks]);
