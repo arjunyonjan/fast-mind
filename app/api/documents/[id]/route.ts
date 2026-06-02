@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    
+
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, error: "Invalid document ID" }, { status: 400 });
     }
@@ -59,7 +59,16 @@ export async function PUT(
       return NextResponse.json({ success: false, error: "Document not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true });
+    const updated = await db.collection("documents").findOne({ _id: new ObjectId(id) });
+    return NextResponse.json({
+      success: true,
+      document: {
+        _id: updated._id.toString(),
+        title: updated.title,
+        content: updated.content,
+        updatedAt: updated.updatedAt?.toISOString?.() || new Date().toISOString()
+      }
+    });
   } catch (err: any) {
     console.error("[API/documents/[id] PUT]", err.message);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
