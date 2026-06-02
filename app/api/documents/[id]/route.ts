@@ -10,8 +10,9 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, error: 'Invalid ID' }, { status: 400 })
+    
+    if (!id || !ObjectId.isValid(id)) {
+      return NextResponse.json({ success: false, error: 'Invalid document ID' }, { status: 400 })
     }
 
     const { db } = await connectToDatabase()
@@ -23,7 +24,11 @@ export async function GET(
 
     return NextResponse.json({ success: true, document: doc })
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    console.error('GET document error:', error.message, error.stack)
+    return NextResponse.json({ 
+      success: false, 
+      error: error.message || 'Internal server error' 
+    }, { status: 500 })
   }
 }
 
@@ -42,12 +47,7 @@ export async function PUT(
     const { db } = await connectToDatabase()
     const result = await db.collection('documents').updateOne(
       { _id: new ObjectId(id) },
-      {
-        $set: {
-         ...body,
-          updatedAt: new Date()
-        }
-      }
+      { $set: {...body, updatedAt: new Date()} }
     )
 
     if (result.matchedCount === 0) {
@@ -56,6 +56,7 @@ export async function PUT(
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
+    console.error('PUT document error:', error.message)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
@@ -79,6 +80,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
+    console.error('DELETE document error:', error.message)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
