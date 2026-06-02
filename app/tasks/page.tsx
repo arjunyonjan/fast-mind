@@ -1,92 +1,112 @@
-"use client";
-import { useState } from "react";
-import { LayoutGrid, Plus, List, Grid3X3 } from "lucide-react";
-import { useTasks, Task } from "@/components/tasks/useTasks";
-import TaskList from "@/components/tasks/TaskList";
-import TaskModal from "@/components/tasks/TaskModal";
+"use client";
+import { useState, useEffect } from "react";
+import { LayoutGrid, Plus, List, Grid3X3 } from "lucide-react";
+import { useTasks, Task } from "@/components/tasks/useTasks";
+import TaskList from "@/components/tasks/TaskList";
+import TaskModal from "@/components/tasks/TaskModal";
+
+export default function TasksPage() {
+  const { tasks, loading, addTask, updateTask, deleteTask } = useTasks();
+  const [view, setView] = useState<"list" | "grid">("list");
+  const [filter, setFilter] = useState<"all" | "pending" | "completed">("all");
+  const [editTask, setEditTask] = useState<Task | null>(null); const [isModalOpen, setIsModalOpen] = useState(false); useEffect(() => { console.log("isModalOpen changed to:", isModalOpen); }, [isModalOpen]);
+
+  const filtered = filter === "all"? tasks : filter === "pending"? tasks.filter(t => t.status!== "completed") : tasks.filter(t => t.status === "completed");
+
+  const handleComplete = (id: string) => {
+    const task = tasks.find(t => t._id === id);
+    if (!task) return;
+    updateTask(id, { status: task.status === "completed"? "pending" : "completed" });
+  };
+  const handleFail = (id: string) => updateTask(id, { status: "failed" });
+  const handleSave = (data: Partial<Task>) => {
+    if (editTask) {
+        updateTask(editTask._id, data);
+    } else {
+        addTask({title: data.title ?? "", description: data.description ?? "", priority: data.priority ?? "medium", status: data.status ?? "todo"});
+    }
+    setIsModalOpen(false);
+    setEditTask(null);
+};
+
+  return (
+    <div className="flex flex-col h-full bg-white dark:bg-zinc-950">
+      {loading && <div className="fixed top-0 left-0 right-0 h-0.5 z-50"><div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-loading-bar" /></div>}
+
+      <div className="border-b border-zinc-100 dark:border-zinc-800 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <LayoutGrid size={16} className="text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-zinc-900 dark:text-white">Tasks</h1>
+              <p className="text-xs text-zinc-400 dark:text-zinc-500">{tasks.length} total Ã‚Â· {tasks.filter(t => t.status!== "completed").length} active</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5">
+              <button onClick={() => setView("list")} className={`p-1.5 rounded-md text-xs transition ${view === "list"? "bg-white dark:bg-zinc-700 shadow-sm text-zinc-800 dark:text-white" : "text-zinc-500"}`}>
+                <List size={14} />
+              </button>
+              <button onClick={() => setView("grid")} className={`p-1.5 rounded-md text-xs transition ${view === "grid"? "bg-white dark:bg-zinc-700 shadow-sm text-zinc-800 dark:text-white" : "text-zinc-500"}`}>
+                <Grid3X3 size={14} />
+              </button>
+            </div>
+            <button onClick={() => { console.log("New Task clicked"); setEditTask(null); setIsModalOpen(true); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-medium transition">
+              <Plus size={14} /> New Task
+            </button>
+          </div>
+        </div>
+
+        <div className="flex gap-1 mt-3">
+          {(["all", "pending", "completed"] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 text-xs rounded-lg font-medium transition ${
+                filter === f
+                 ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200"
+                  : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              }`}
+            >
+              {f === "all"? "All" : f === "pending"? "Active" : "Completed"}
+              <span className="ml-1.5 text-zinc-400">
+                {f === "all"? tasks.length : f === "pending"? tasks.filter(t => t.status!== "completed").length : tasks.filter(t => t.status === "completed").length}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-6 py-4">
+        <TaskList tasks={filtered} view={view} onEdit={(task) => { setEditTask(task); setIsModalOpen(true); }} 
+          onComplete={handleComplete} onFail={handleFail} 
+          onDelete={deleteTask}
+        />
+      </div>
+
+      <TaskModal 
+        task={editTask} 
+        open={isModalOpen} 
+        onClose={() => { setIsModalOpen(false); setEditTask(null); }} 
+        onSave={handleSave}
+      />
+    </div>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+
 
-export default function TasksPage() {
-  const { tasks, loading, updateTask, deleteTask } = useTasks();
-  const [view, setView] = useState<"list" | "grid">("list");
-  const [filter, setFilter] = useState<"all" | "pending" | "completed">("all");
-  const [editTask, setEditTask] = useState<Task | null>(null);
-
-  const filtered = filter === "all"? tasks : filter === "pending"? tasks.filter(t => t.status!== "completed") : tasks.filter(t => t.status === "completed");
-
-  const handleComplete = (id: string) => {
-    const task = tasks.find(t => t._id === id);
-    if (!task) return;
-    updateTask(id, { status: task.status === "completed"? "pending" : "completed" });
-  };
-  const handleFail = (id: string) => updateTask(id, { status: "failed" });
-  const handleSave = (data: Partial<Task>) => { if (editTask) updateTask(editTask._id, data); };
-
-  return (
-    <div className="flex flex-col h-full bg-white dark:bg-zinc-950">
-      {loading && <div className="fixed top-0 left-0 right-0 h-0.5 z-50"><div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-loading-bar" /></div>}
-
-      <div className="border-b border-zinc-100 dark:border-zinc-800 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-              <LayoutGrid size={16} className="text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold text-zinc-900 dark:text-white">Tasks</h1>
-              <p className="text-xs text-zinc-400 dark:text-zinc-500">{tasks.length} total Ã‚Â· {tasks.filter(t => t.status!== "completed").length} active</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5">
-              <button onClick={() => setView("list")} className={`p-1.5 rounded-md text-xs transition ${view === "list"? "bg-white dark:bg-zinc-700 shadow-sm text-zinc-800 dark:text-white" : "text-zinc-500"}`}>
-                <List size={14} />
-              </button>
-              <button onClick={() => setView("grid")} className={`p-1.5 rounded-md text-xs transition ${view === "grid"? "bg-white dark:bg-zinc-700 shadow-sm text-zinc-800 dark:text-white" : "text-zinc-500"}`}>
-                <Grid3X3 size={14} />
-              </button>
-            </div>
-            <button onClick={() => setEditTask({} as Task)} className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-medium transition">
-              <Plus size={14} /> New Task
-            </button>
-          </div>
-        </div>
-
-        <div className="flex gap-1 mt-3">
-          {(["all", "pending", "completed"] as const).map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 text-xs rounded-lg font-medium transition ${
-                filter === f
-                 ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200"
-                  : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-              }`}
-            >
-              {f === "all"? "All" : f === "pending"? "Active" : "Completed"}
-              <span className="ml-1.5 text-zinc-400">
-                {f === "all"? tasks.length : f === "pending"? tasks.filter(t => t.status!== "completed").length : tasks.filter(t => t.status === "completed").length}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-6 py-4">
-        <TaskList tasks={filtered} view={view} onEdit={setEditTask} 
-          onComplete={handleComplete} onFail={handleFail} 
-          onDelete={deleteTask}
-        />
-      </div>
-
-      <TaskModal 
-        task={editTask} 
-        open={!!editTask} 
-        onClose={() => setEditTask(null)} 
-        onSave={handleSave}
-      />
-    </div>
-  );
-}
 
 
 
