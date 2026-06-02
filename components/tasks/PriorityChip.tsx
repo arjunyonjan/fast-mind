@@ -9,7 +9,7 @@ const priorityStyles = {
 export default function PriorityChip({ priority }: { priority?: string }) {
   const p = priority || "low";
   return (
-    <div className={`px-1.5 py-0.5 rounded text- font-medium text-center border ${priorityStyles[p] || priorityStyles.low}`}>
+    <div className={`px-1.5 py-0.5 rounded text- font-medium text-center border ${priorityStyles[p as "high" | "medium" | "low"] || priorityStyles.low}`}>
       {p}
     </div>
   );
