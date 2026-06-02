@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
@@ -60,6 +60,9 @@ export async function PUT(
     }
 
     const updated = await db.collection("documents").findOne({ _id: new ObjectId(id) });
+    if (!updated) {
+      return NextResponse.json({ success: false, error: "Document not found after update" }, { status: 404 });
+    }
     return NextResponse.json({
       success: true,
       document: {
@@ -98,3 +101,4 @@ export async function DELETE(
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
