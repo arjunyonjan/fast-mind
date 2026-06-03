@@ -107,11 +107,15 @@ export async function POST(req: Request) {
     if (intent === "list_tasks") {
       const tasks = await db.collection("tasks").find({}).sort({ createdAt: -1 }).limit(10).toArray();
       if (tasks.length === 0) return NextResponse.json({ reply: "📋 No tasks yet." });
-      const list = tasks.map((t, i) => `${i + 1}. **${t.title}** — [${t.priority}] ${t.status}`).join("\n");
+      const list = tasks.map((t, i) => {
+        if (t.status === "failed") {
+          return `${i+1}. ❌ **${t.title}** — [${t.priority}] **FAILED**`;
+        }
+        const statusEmoji = t.status === "completed" ? "✅" : "⏳";
+        return `${i+1}. **${t.title}** — [${t.priority}] ${statusEmoji} ${t.status}`;
+      }).join("\n");
       return NextResponse.json({ reply: `📋 **Your tasks** (${tasks.length}):\n\n${list}` });
     }
-
-    // LIST DOCUMENTS
     if (intent === "list_documents") {
       const docs = await db.collection("documents").find({}).sort({ updatedAt: -1 }).limit(15).toArray();
       if (docs.length === 0) return NextResponse.json({ reply: "📄 No documents yet." });
@@ -265,4 +269,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ reply: "⚠️ " + err.message }, { status: 502 });
   }
 }
-

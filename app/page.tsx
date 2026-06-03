@@ -11,6 +11,7 @@ function MarkdownText({ text }: { text: string }) {
   return (
     <div className="space-y-0.5">
       {lines.map((line, i) => {
+        const isFailed = line.includes('❌') && line.includes('FAILED');
         const parts: React.ReactNode[] = [];
         const regex = /\*\*(.+?)\*\*/g;
         let lastIdx = 0;
@@ -18,12 +19,12 @@ function MarkdownText({ text }: { text: string }) {
         let idx = 0;
         while ((match = regex.exec(line)) !== null) {
           if (match.index > lastIdx) parts.push(<span key={idx++}>{line.slice(lastIdx, match.index)}</span>);
-          parts.push(<strong key={idx++} className="font-semibold">{match[1]}</strong>);
+          parts.push(<strong key={idx++} className={`font-semibold ${isFailed ? 'text-red-500' : ''}`}>{match[1]}</strong>);
           lastIdx = regex.lastIndex;
         }
         if (parts.length === 0) parts.push(<span key={0}>{line || '\u00A0'}</span>);
         else if (lastIdx < line.length) parts.push(<span key={idx}>{line.slice(lastIdx)}</span>);
-        return <p key={i} className="leading-relaxed">{parts}</p>;
+        return <p key={i} className={`leading-relaxed ${isFailed ? 'text-red-500' : ''}`}>{parts}</p>;
       })}
     </div>
   );
