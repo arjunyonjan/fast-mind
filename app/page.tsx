@@ -1,33 +1,70 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Send, FileText, Sparkles, Bot, User, ArrowRight, RotateCcw, MessageSquare, Trash2 } from 'lucide-react';
+import { Send, FileText, Sparkles, Bot, User, ArrowRight, RotateCcw, MessageSquare, Trash2, Copy, Check } from "lucide-react";
 
 interface Message { id: string; role: 'user' | 'assistant'; content: string; timestamp?: number; }
 interface Document { _id: string; title: string; content: string; updatedAt: string; }
 
 function MarkdownText({ text }: { text: string }) {
+  const [copied, setCopied] = useState<string | null>(null);
   const lines = text.split('\n');
-  return (
-    <div className="space-y-0.5">
-      {lines.map((line, i) => {
-        const isFailed = line.includes('❌') && line.includes('FAILED');
-        const parts: React.ReactNode[] = [];
-        const regex = /\*\*(.+?)\*\*/g;
-        let lastIdx = 0;
-        let match;
-        let idx = 0;
-        while ((match = regex.exec(line)) !== null) {
-          if (match.index > lastIdx) parts.push(<span key={idx++}>{line.slice(lastIdx, match.index)}</span>);
-          parts.push(<strong key={idx++} className={`font-semibold ${isFailed ? 'text-red-500' : ''}`}>{match[1]}</strong>);
-          lastIdx = regex.lastIndex;
-        }
-        if (parts.length === 0) parts.push(<span key={0}>{line || '\u00A0'}</span>);
-        else if (lastIdx < line.length) parts.push(<span key={idx}>{line.slice(lastIdx)}</span>);
-        return <p key={i} className={`leading-relaxed ${isFailed ? 'text-red-500' : ''}`}>{parts}</p>;
-      })}
-    </div>
-  );
+  const result: React.ReactNode[] = [];
+  let i = 0;
+  
+  while (i < lines.length) {
+    const line = lines[i];
+    // Check for code block start
+    if (line.trim().startsWith('```')) {
+      const lang = line.trim().slice(3);
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].trim().startsWith('```')) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      const code = codeLines.join('\n');
+      const copyCode = () => {
+        navigator.clipboard.writeText(code);
+        setCopied(code);
+        setTimeout(() => setCopied(null), 2000);
+      };
+      result.push(
+        <div key={`code-${i}`} className="relative my-3 group">
+          <pre className="bg-zinc-900 text-zinc-100 rounded-xl p-4 overflow-x-auto text-sm font-mono">
+            <code>{code}</code>
+          </pre>
+          <button
+            onClick={copyCode}
+            className="absolute top-2 right-2 p-1.5 rounded-lg bg-zinc-800 opacity-0 group-hover:opacity-100 transition text-zinc-400 hover:text-white"
+          >
+            {copied === code ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+          </button>
+        </div>
+      );
+      i++;
+      continue;
+    }
+    
+    // Regular text handling
+    const isFailed = line.includes('❌') && line.includes('FAILED');
+    const parts: React.ReactNode[] = [];
+    const regex = /\*\*(.+?)\*\*/g;
+    let lastIdx = 0;
+    let match;
+    let idx = 0;
+    while ((match = regex.exec(line)) !== null) {
+      if (match.index > lastIdx) parts.push(<span key={idx++}>{line.slice(lastIdx, match.index)}</span>);
+      parts.push(<strong key={idx++} className={`font-semibold ${isFailed ? 'text-red-500' : ''}`}>{match[1]}</strong>);
+      lastIdx = regex.lastIndex;
+    }
+    if (parts.length === 0) parts.push(<span key={0}>{line || '\u00A0'}</span>);
+    else if (lastIdx < line.length) parts.push(<span key={idx}>{line.slice(lastIdx)}</span>);
+    result.push(<p key={i} className={`leading-relaxed ${isFailed ? 'text-red-500' : ''}`}>{parts}</p>);
+    i++;
+  }
+  
+  return <div className="space-y-0.5">{result}</div>;
 }
 
 const SUGGESTIONS = [
