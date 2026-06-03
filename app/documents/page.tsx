@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { FileText, Search, Plus, RefreshCw, Calendar, List, Grid3X3, MoreHorizontal, Trash2, X } from "lucide-react";
+import { FileText, Search, Plus, RefreshCw, Calendar, List, Grid3X3, MoreHorizontal, Trash2, X, Zap } from "lucide-react";
 
 interface Doc { _id: string; title: string; content: string; updatedAt: string; }
 
@@ -9,7 +9,15 @@ export default function DocumentsPage() {
   const [loading, setLoading] = useState(true);
   const [docs, setDocs] = useState<Doc[]>([]);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+  
   const [view, setView] = useState<"list" | "grid">("list");
   const [sortBy, setSortBy] = useState<"updatedAt" | "title">("updatedAt");
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -35,7 +43,7 @@ export default function DocumentsPage() {
       setLoading(false);
     };
     fetchData();
-  }, [page, search]);
+  }, [debouncedSearch]);
 
   const refresh = () => {
     setLoading(true);
@@ -47,15 +55,16 @@ export default function DocumentsPage() {
   const loadMore = async () => {
     if (loadingMore) return;
     setLoadingMore(true);
-    const url = search 
-      ? `/api/documents?search=${encodeURIComponent(search)}&page=${page + 1}&limit=20`
-      : `/api/documents?page=${page + 1}&limit=20`;
+    const nextPage = page + 1;
+    const url = debouncedSearch 
+      ? `/api/documents?search=${encodeURIComponent(debouncedSearch)}&page=${nextPage}&limit=20`
+      : `/api/documents?page=${nextPage}&limit=20`;
     const res = await fetch(url);
     const data = await res.json();
     if (data.success) {
       setDocs(prev => [...prev, ...data.documents]);
-      setPage(page + 1);
-      setHasMore((page + 1) * 20 < data.total);
+      setPage(nextPage);
+      setHasMore(data.documents.length === 20);
     }
     setLoadingMore(false);
   };
@@ -64,7 +73,9 @@ export default function DocumentsPage() {
     await fetch("/api/documents/" + id, { method: "DELETE" });
     setDocs(p => p.filter(d => d._id !== id));
     setDeleteId(null);
+    setLoadingMore(false);
   };
+
 
   const filtered = docs;
   const stripHtml = (html: string) => html.replace(/<[^>]*>/g, "").substring(0, 120);
@@ -103,7 +114,6 @@ export default function DocumentsPage() {
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-white dark:bg-zinc-950">
-      {/* Header */}
       <div className="border-b border-zinc-100 dark:border-zinc-800 px-6 py-4 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -133,13 +143,21 @@ export default function DocumentsPage() {
           </div>
         </div>
 
-        {/* Search + Sort */}
         <div className="flex items-center gap-3 mt-3">
           <div className="relative flex-1 max-w-md">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
             <input
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setSearchLoading(true); setTimeout(() => setSearchLoading(false), 300); }}
+              onChange={(e) => { 
+                const value = e.target.value;
+                setSearch(value);
+                setSearchLoading(true);
+                if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+                searchTimerRef.current = setTimeout(() => {
+                  setDebouncedSearch(value);
+                  setSearchLoading(false);
+                }, 500);
+              }}
               placeholder="Search documents..."
               className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 outline-none focus:border-emerald-400 transition"
             />
@@ -156,7 +174,6 @@ export default function DocumentsPage() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
@@ -240,13 +257,12 @@ export default function DocumentsPage() {
         {docs.length < total && (
           <div className="text-center py-8">
             <button onClick={loadMore} disabled={loadingMore} className="px-6 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-50 transition">
-              {loadingMore ? "Loading..." : "Load More"}
+              {loadingMore ? "Loading..." : "⚡⚡⚡⚡⚡ Load More"}
             </button>
           </div>
         )}
       </div>
 
-      {/* Delete confirm modal */}
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setDeleteId(null)}>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 p-6 w-80 text-center mx-4" onClick={e => e.stopPropagation()}>
