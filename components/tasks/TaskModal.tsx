@@ -62,7 +62,7 @@ export default function TaskModal({ task, open, onClose, onSave }: {
           </div>
           <div className="flex gap-3 justify-end pt-4 border-t border-zinc-200 dark:border-zinc-800">
             <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">Cancel</button>
-            <button onClick={() => { onSave({ title, description: desc, dueDate, priority }); onClose(); }} className="px-4 py-2 text-sm rounded-lg bg-violet-600 text-white font-medium">Save</button>
+            <button onClick={() => { onSave({ title, description: desc, dueDate, priority: priority as "high" | "medium" | "low" }); onClose(); }} className="px-4 py-2 text-sm rounded-lg bg-violet-600 text-white font-medium">Save</button>
           </div>
         </div>
       </div>
