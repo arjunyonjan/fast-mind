@@ -18,9 +18,9 @@ export default function LaunchersPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [runningId, setRunningId] = useState<string | null>(null);
-    const [outputModal, setOutputModal] = useState<{ launcherName: string; output: string } | null>(null);
-  const [editingLauncher, setEditingLauncher] = useState<Launcher | null>(null);
+  const [outputModal, setOutputModal] = useState<{ launcherName: string; output: string } | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingLauncher, setEditingLauncher] = useState<Launcher | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -90,7 +90,7 @@ export default function LaunchersPage() {
     }
   };
 
-    const handleUpdate = async () => {
+  const handleUpdate = async () => {
     if (!editingLauncher) return;
     if (!formData.name || !formData.command) {
       alert("Name and command are required");
@@ -124,6 +124,7 @@ export default function LaunchersPage() {
   };
 
   const handleEdit = (launcher: Launcher) => {
+    console.log("Edit clicked:", launcher);
     setEditingLauncher(launcher);
     setFormData({
       name: launcher.name,
@@ -205,7 +206,7 @@ export default function LaunchersPage() {
                   )}
                   Run
                 </button>
-                <button className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 transition">
+                <button onClick={() => handleEdit(launcher)} className="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 transition">
                   <Edit2 size={14} />
                 </button>
                 <button
@@ -220,6 +221,7 @@ export default function LaunchersPage() {
         </div>
       </div>
 
+      {/* Create Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setModalOpen(false)}>
           <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
@@ -258,24 +260,14 @@ export default function LaunchersPage() {
               className="w-full px-3 py-2 mb-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm font-mono focus:outline-none focus:ring-1 focus:ring-cyan-500"
             />
             <div className="flex gap-3">
-              <button
-                onClick={() => setModalOpen(false)}
-                className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreate}
-                disabled={saving}
-                className="flex-1 px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm hover:bg-cyan-600 disabled:opacity-50 transition"
-              >
-                {saving ? "Creating..." : "Create"}
-              </button>
+              <button onClick={() => setModalOpen(false)} className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">Cancel</button>
+              <button onClick={handleCreate} disabled={saving} className="flex-1 px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm hover:bg-cyan-600 disabled:opacity-50 transition">{saving ? "Creating..." : "Create"}</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Delete Modal */}
       {deleteId && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setDeleteId(null)}>
           <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-sm w-full p-6 text-center" onClick={(e) => e.stopPropagation()}>
@@ -285,17 +277,60 @@ export default function LaunchersPage() {
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Delete Launcher?</h3>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">This action cannot be undone.</p>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteId(null)} className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
-                Cancel
-              </button>
-              <button onClick={() => handleDelete(deleteId)} className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition">
-                Delete
-              </button>
+              <button onClick={() => setDeleteId(null)} className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm">Cancel</button>
+              <button onClick={() => handleDelete(deleteId)} className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg text-sm">Delete</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Edit Modal */}
+      {editModalOpen && editingLauncher && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setEditModalOpen(false)}>
+          <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Edit Launcher</h2>
+              <button onClick={() => setEditModalOpen(false)} className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                <X size={18} className="text-zinc-500" />
+              </button>
+            </div>
+            <input
+              type="text"
+              placeholder="Name *"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-3 py-2 mb-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm"
+            />
+            <input
+              type="text"
+              placeholder="Description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-3 py-2 mb-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm"
+            />
+            <input
+              type="text"
+              placeholder="Command *"
+              value={formData.command}
+              onChange={(e) => setFormData({ ...formData, command: e.target.value })}
+              className="w-full px-3 py-2 mb-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm font-mono"
+            />
+            <input
+              type="text"
+              placeholder="Working Directory"
+              value={formData.cwd || ""}
+              onChange={(e) => setFormData({ ...formData, cwd: e.target.value })}
+              className="w-full px-3 py-2 mb-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm font-mono"
+            />
+            <div className="flex gap-3">
+              <button onClick={() => setEditModalOpen(false)} className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm">Cancel</button>
+              <button onClick={handleUpdate} disabled={saving} className="flex-1 px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm">{saving ? "Saving..." : "Save"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Output Modal */}
       {outputModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setOutputModal(null)}>
           <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-2xl w-full max-h- overflow-hidden" onClick={(e) => e.stopPropagation()}>
@@ -309,12 +344,7 @@ export default function LaunchersPage() {
               {outputModal.output}
             </pre>
             <div className="p-4 pt-0">
-              <button
-                onClick={() => setOutputModal(null)}
-                className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm hover:bg-cyan-600 transition"
-              >
-                Close
-              </button>
+              <button onClick={() => setOutputModal(null)} className="w-full px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm hover:bg-cyan-600 transition">Close</button>
             </div>
           </div>
         </div>

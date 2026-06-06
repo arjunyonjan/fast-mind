@@ -74,6 +74,9 @@ export default function AppSidebar() {
           <Link href="/cloudinary-gallery" className={link("/cloudinary-gallery")} title="Gallery">
             <Camera size={17} />{!collapsed && <span>Gallery</span>}
           </Link>
+          <Link href="/launchers" className={link("/launchers")} title="Launchers">
+            <Rocket size={17} />{!collapsed && <span>Launchers</span>}
+          </Link>
           
           <Link href="/docs" className={link("/docs")} title="Technical Documentation">
             <FileText size={17} />{!collapsed && <span>Technical Documentation</span>}
