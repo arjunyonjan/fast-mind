@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { FileText, LayoutGrid, Home, PanelLeftClose, PanelLeft, Zap, Sun, Moon, RefreshCw, FileImage, Brain, Camera } from "lucide-react"
+import { FileText, LayoutGrid, Home, PanelLeftClose, PanelLeft, Zap, Sun, Moon, RefreshCw, FileImage, Brain, Camera, Rocket } from "lucide-react"
 import { useTheme } from "@/components/ThemeProvider"
 import DeepSeekIcon from "@/components/DeepSeekIcon"
 
