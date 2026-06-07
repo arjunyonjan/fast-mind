@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 import { Terminal, Play, X, Zap, Copy, Check } from "lucide-react";
 
 const presets = [
-  { label: "Dev Server", cmd: "cd C:\\work\\next-fastmind\nnpm run dev" },
-  { label: "Git Push", cmd: "cd C:\\work\\next-fastmind\ngit add -A\ngit commit -m \"Update\"\ngit push origin main" },
-  { label: "Build", cmd: "cd C:\\work\\next-fastmind\nnpm run build" },
+  { label: "Dev Server", cmd: "cd C:\\work\\next-fastmind; npm run dev" },
+  { label: "Git Push", cmd: "cd C:\\work\\next-fastmind; git add -A; git commit -m Update; git push origin main" },
+  { label: "Build", cmd: "cd C:\\work\\next-fastmind; npm run build" },
   { label: "Auto-Dump On", cmd: "Start-Process powershell -ArgumentList '-WindowStyle Minimized -File C:\\work\\next-fastmind\\auto-dump.ps1'" },
 ];
 
