@@ -103,7 +103,21 @@ export default function AppSidebar() {
             {!collapsed && (theme === "dark" ? "Light mode" : "Dark mode")}
           </button>
         </div>
-      </aside>
+                <div className="relative mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+            <button onClick={() => {
+              const menu = document.getElementById("theme-menu");
+              if (menu) menu.classList.toggle("hidden");
+            }} className="flex items-center gap-3 w-full px-3 py-2 text-sm rounded-lg transition text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+              {!collapsed && <span>🎨 Theme</span>}
+            </button>
+            <div id="theme-menu" className="hidden absolute bottom-full left-0 mb-1 w-28 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-zinc-200 dark:border-zinc-700 z-50">
+              <button onClick={() => { document.documentElement.classList.remove("light", "tron"); document.documentElement.classList.add("dark"); localStorage.setItem("theme", "dark"); document.getElementById("theme-menu")?.classList.add("hidden"); }} className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-t-lg">🌙 Dark</button>
+              <button onClick={() => { document.documentElement.classList.remove("dark", "tron"); document.documentElement.classList.add("light"); localStorage.setItem("theme", "light"); document.getElementById("theme-menu")?.classList.add("hidden"); }} className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700">☀️ Light</button>
+              <button onClick={() => { document.documentElement.classList.remove("dark", "light"); document.documentElement.classList.add("tron"); localStorage.setItem("theme", "tron"); document.getElementById("theme-menu")?.classList.add("hidden"); }} className="flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-b-lg">✨ Tron</button>
+            </div>
+          </div>
+</aside>
     </>
   )
 }

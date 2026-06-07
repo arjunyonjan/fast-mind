@@ -136,3 +136,56 @@ button, a, [role='button'] { cursor: pointer; }
 .animate-pulse-slow {
   animation: pulse-slow 3s ease-in-out infinite;
 }
+/* Force Tron mode overrides */
+html.tron,
+html.tron * {
+  border-color: rgba(0, 243, 255, 0.3) !important;
+}
+
+html.tron body,
+html.tron .bg-white,
+html.tron .dark\:bg-zinc-900,
+html.tron .bg-gray-50,
+html.tron .dark\:bg-zinc-950,
+html.tron .bg-zinc-100,
+html.tron .dark\:bg-zinc-800,
+html.tron .bg-gray-100,
+html.tron .bg-gray-50 {
+  background-color: #0a0a0a !important;
+}
+
+html.tron .text-white,
+html.tron .text-gray-900,
+html.tron .text-zinc-900,
+html.tron .text-zinc-800,
+html.tron .text-gray-800,
+html.tron .text-zinc-700,
+html.tron .text-gray-700 {
+  color: #00f3ff !important;
+}
+
+html.tron .bg-cyan-500,
+html.tron .bg-cyan-600,
+html.tron .bg-gradient-to-r,
+html.tron .bg-violet-600 {
+  background: #00f3ff !important;
+  color: #0a0a0a !important;
+}
+
+html.tron button,
+html.tron .rounded-lg,
+html.tron .rounded-xl {
+  transition: all 0.2s ease;
+}
+
+html.tron button:hover {
+  background: rgba(0, 243, 255, 0.1) !important;
+}
+
+html.tron .border-b,
+html.tron .border-t,
+html.tron .border-r,
+html.tron .border-l,
+html.tron .border {
+  border-color: rgba(0, 243, 255, 0.3) !important;
+}
