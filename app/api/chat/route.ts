@@ -31,14 +31,15 @@ export async function POST(req: Request) {
     // Hardcoded intent
     let intent = "chat";
     const lowerMsg = message.toLowerCase();
-    if (lowerMsg.includes("list tasks")) intent = "list_tasks"; else if (lowerMsg.includes("create task")) intent = "create_task"; else if (lowerMsg === "yes" || lowerMsg === "confirm") intent = "confirm_task";
-    console.log('[DEBUG] Hardcoded intent:', intent);
-    console.log('[DEBUG] Lower message:', lowerMsg);
+    if (lowerMsg.includes("list pending") || lowerMsg.includes("show pending")) intent = "list_pending";
+    else if (lowerMsg.includes("list tasks")) intent = "list_tasks";
+    else if (lowerMsg.includes("create task")) intent = "create_task";
+    else if (lowerMsg === "yes" || lowerMsg === "confirm") intent = "confirm_task";
 
     // AI intent if not hardcoded
     if (intent === "chat") {
       const classifyMessages = [
-        { role: "system" as const, content: "You are FastMind AI. Actions: create_task, confirm_task, list_tasks. Return ONLY the word." },
+        { role: "system" as const, content: "You are FastMind AI. Actions: create_task, confirm_task, list_tasks, list_pending. Return ONLY the word." },
         ...recentHistory.map((m: any) => ({ role: m.role, content: m.content })),
         { role: "user" as const, content: message }
       ];
@@ -60,6 +61,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: "✅ Created: " + task.title });
     }
 
+    async function matchPendingTask(userMsg: string, pendingList: any[]) {
+      if (pendingList.length === 1) return pendingList[0];
+      const taskList = pendingList.map((p, i) => `${i+1}. ${p.data.title} (${p.type})`).join("\n");
+      const matchRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [{ role: "system", content: `Pending items:\n${taskList}\nUser: "${userMsg}". Return ONLY the number (1-${pendingList.length}) of the best match.` }],
+          temperature: 0, max_tokens: 10
+        }),
+      });
+      if (!matchRes.ok) return pendingList[0];
+      const data = await matchRes.json();
+      const idx = parseInt(data.choices?.[0]?.message?.content?.trim() || "1") - 1;
+      return pendingList[Math.min(Math.max(0, idx), pendingList.length - 1)];
+    }
+
+    // LIST PENDING
+    if (intent === "list_pending") {
+      const pending = await db.collection("pendingTasks").find({ sessionId: sessionId }).toArray();
+      if (pending.length === 0) {
+        return NextResponse.json({ reply: "📭 No pending tasks or documents." });
+      }
+      const list = pending.map((p, i) => `${i+1}. ${p.data.title || "Untitled"} (${p.type})`).join("\n");
+      return NextResponse.json({ reply: `📋 **Pending items:**\n\n${list}\n\nReply with number or description to create.` });
+    }
+
+    // LIST TASKS
     if (intent === "list_tasks") {
       const tasks = await db.collection("tasks").find({}).sort({ createdAt: -1 }).limit(10).toArray();
       if (tasks.length === 0) return NextResponse.json({ reply: "📋 No tasks yet." });
@@ -67,21 +97,38 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: "📋 Your tasks:\n\n" + list });
     }
 
+    // CONFIRM TASK (multi-pending support)
     if (intent === "confirm_task") {
-      const pending = await db.collection("pendingTasks").findOne({ sessionId: sessionId, type: "task" });
-      if (!pending) return NextResponse.json({ reply: "No pending task found." });
-      const result = await createTaskFromData(pending.data);
-      await db.collection("pendingTasks").deleteOne({ _id: pending._id });
+      const allPending = await db.collection("pendingTasks").find({ sessionId: sessionId, type: "task" }).toArray();
+      if (allPending.length === 0) {
+        return NextResponse.json({ reply: "🤔 No pending tasks found. Create one first!" });
+      }
+      
+      let matched = null;
+      const lowerMsgConfirm = message.toLowerCase();
+      const numMatch = lowerMsgConfirm.match(/(\d+)/);
+      if (numMatch) {
+        const idx = parseInt(numMatch[1]) - 1;
+        if (idx >= 0 && idx < allPending.length) matched = allPending[idx];
+      }
+      
+      if (!matched && allPending.length > 1) {
+        matched = await matchPendingTask(message, allPending);
+      }
+      if (!matched) matched = allPending[0];
+      
+      const result = await createTaskFromData(matched.data);
+      await db.collection("pendingTasks").deleteOne({ _id: matched._id });
       return result;
     }
 
-    // Create task
+    // CREATE TASK
     const r = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "deepseek-chat",
-        messages: [{ role: "system", content: "Extract task. Return ONLY JSON: {\"title\":\"...\",\"description\":\"...\",\"priority\":\"high|medium|low\"}" }, { role: "user", content: message }],
+        messages: [{ role: "system", content: 'Extract task. Return ONLY JSON: {"title":"...","description":"...","priority":"high|medium|low"}' }, { role: "user", content: message }],
         temperature: 0, max_tokens: 150
       }),
     });
