@@ -44,6 +44,27 @@ export async function POST(req: Request) {
     const classifyJson = classifyRes.ok ? await classifyRes.json() : null;
     const intent = classifyJson?.choices?.[0]?.message?.content?.trim().toLowerCase() || "create_task";
     trackTokens(classifyJson, "deepseek-chat");
+    async function matchPendingTask(message: string, tasks: any[]) {
+      if (tasks.length === 0) return null;
+      if (tasks.length === 1) return tasks[0];
+      
+      const taskList = tasks.map((t, i) => `${i+1}. ${t.data.title} (${t.type})`).join("\n");
+      const matchRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: `You have these pending items:\n${taskList}\nUser says: "${message}". Return ONLY the number (1-${tasks.length}) of the best match.` }
+          ],
+          temperature: 0, max_tokens: 10
+        }),
+      });
+      if (!matchRes.ok) return tasks[0];
+      const data = await matchRes.json();
+      const idx = parseInt(data.choices?.[0]?.message?.content?.trim() || "1") - 1;
+      return tasks[Math.min(Math.max(0, idx), tasks.length - 1)];
+    }
 
     const db = await connectToDatabase();
 
@@ -104,7 +125,16 @@ export async function POST(req: Request) {
     }
 
     // LIST TASKS
-    if (intent === "list_tasks") {
+        if (intent === "list_pending") {
+      const pending = await db.collection("pendingTasks").find({ sessionId }).toArray();
+      if (pending.length === 0) {
+        return NextResponse.json({ reply: "📭 No pending tasks or documents." });
+      }
+      const list = pending.map((p, i) => `${i+1}. ${p.data.title || p.data.name || "Untitled"} (${p.type})`).join("\n");
+      return NextResponse.json({ reply: `📋 **Pending items:**\n\n${list}\n\nReply with a hint or number to create.` });
+    }
+
+     {
       const tasks = await db.collection("tasks").find({}).sort({ createdAt: -1 }).limit(10).toArray();
       if (tasks.length === 0) return NextResponse.json({ reply: "📋 No tasks yet." });
       const list = tasks.map((t, i) => {
