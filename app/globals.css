@@ -189,3 +189,94 @@ html.tron .border-l,
 html.tron .border {
   border-color: rgba(0, 243, 255, 0.3) !important;
 }
+
+/* Remove red glow from failed tasks on hover */
+[class*="border-red-200"]:hover,
+[class*="border-red-800"]:hover,
+.border-red-200\/60:hover,
+.dark\:border-red-800\/40:hover {
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  box-shadow: none !important;
+}
+
+/* Keep text red but no glow */
+[class*="border-red-200"],
+[class*="border-red-800"],
+.border-red-200\/60,
+.dark\:border-red-800\/40 {
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Normal tasks keep cyan glow on hover */
+.group:hover:not([class*="border-red-200"]):not([class*="border-red-800"]) {
+  border-color: #00f3ff !important;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.4) !important;
+}
+
+/* Remove ALL backgrounds from tasks - normal and failed */
+.group.px-4.py-2\.5,
+.group.px-4.py-2\.5:hover,
+.bg-gradient-to-r.from-red-50\/60,
+.bg-gradient-to-r.from-red-50\/60:hover,
+.dark\:from-red-950\/25,
+.dark\:from-red-950\/25:hover,
+[class*="bg-gradient-to-r"],
+[class*="bg-gradient-to-br"],
+.hover\:bg-zinc-50\/70:hover,
+.dark\:hover\:bg-zinc-900\/40:hover {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Normal task border - subtle */
+.border-zinc-200\/60,
+.dark\:border-zinc-800\/60 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Failed task border - subtle red */
+.border-red-200\/60,
+.dark\:border-red-800\/40 {
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Hover effects - only border glow, no background */
+.group:hover,
+.border-zinc-200\/60:hover,
+.dark\:border-zinc-800\/60:hover {
+  border-color: #00f3ff !important;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.3) !important;
+  background: transparent !important;
+}
+
+/* Failed tasks - no glow on hover, just subtle border */
+.border-red-200\/60:hover,
+.dark\:border-red-800\/40:hover {
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  box-shadow: none !important;
+}
+
+/* Failed tasks - red glow on hover (only for failed) */
+.border-red-200\/60:hover,
+.dark\:border-red-800\/40:hover,
+[class*="border-red-200"]:hover,
+[class*="border-red-800"]:hover {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.5) !important;
+  background: transparent !important;
+}
+
+/* Normal tasks - cyan glow on hover */
+.group:hover:not([class*="border-red-200"]):not([class*="border-red-800"]),
+.border-zinc-200\/60:hover,
+.dark\:border-zinc-800\/60:hover {
+  border-color: #00f3ff !important;
+  box-shadow: 0 0 12px rgba(0, 243, 255, 0.4) !important;
+}
+
+/* Remove any background on hover for both */
+.group:hover,
+.border-red-200\/60:hover,
+.border-zinc-200\/60:hover {
+  background: transparent !important;
+}
