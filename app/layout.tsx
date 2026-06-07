@@ -5,6 +5,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import { ToastProvider } from "@/components/ToastProvider";
 import ThemeProvider from "@/components/ThemeProvider";
+import CommandLauncher from '@/components/CommandLauncher';
 import { ClientProviders } from "@/components/ClientProviders";
 import AppSidebar from "@/components/AppSidebar";
 import MobileMenuButton from "@/components/MobileMenuButton";
@@ -32,7 +33,8 @@ export default function RootLayout({
               </div>
             </div>
             <Suspense fallback={null}>
-              <ClientProviders />
+              <CommandLauncher />
+            <ClientProviders />
             </Suspense>
           </ToastProvider>
         </ThemeProvider>

@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 
 export default function Custom404() {
-  const { asPath, query } = useRouter()
-  return <div>404 - Path: {asPath}</div>
+  
+  return <div>404 - Page not found</div>
 }
