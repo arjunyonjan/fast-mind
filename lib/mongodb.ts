@@ -25,6 +25,17 @@ export async function connectToDatabase(): Promise<Db> {
   await client.connect();
   const db = client.db(dbName);
 
+  // Create TTL index for pendingTasks (auto-delete after 1 hour)
+  try {
+    await db.collection("pendingTasks").createIndex(
+      { "createdAt": 1 },
+      { expireAfterSeconds: 3600 }
+    );
+    console.log("✅ TTL index created on pendingTasks");
+  } catch (err) {
+    console.log("⚠️ TTL index creation skipped:", err);
+  }
+
   cachedClient = client;
   cachedDb = db;
   console.log('✅ Database connected and cached');
