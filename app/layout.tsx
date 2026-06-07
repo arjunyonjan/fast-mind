@@ -9,6 +9,7 @@ import CommandLauncher from '@/components/CommandLauncher';
 import { ClientProviders } from "@/components/ClientProviders";
 import AppSidebar from "@/components/AppSidebar";
 import MobileMenuButton from "@/components/MobileMenuButton";
+import EnvIndicator from "@/components/EnvIndicator";
 
 export const metadata: Metadata = {
   title: "FastMind",
@@ -23,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-gray-50 dark:bg-zinc-950 h-screen overflow-hidden">
+        <EnvIndicator />
         <ThemeProvider>
           <ToastProvider>
             <MobileMenuButton />
