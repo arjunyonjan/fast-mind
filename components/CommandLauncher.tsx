@@ -6,7 +6,7 @@ export default function CommandLauncher() {
   const [open, setOpen] = useState(false);
   const [cmd, setCmd] = useState("");
   const [output, setOutput] = useState("");
-  const [running, setRunning] = useState(false);
+  const [wsStatus, setWsStatus] = useState("checking"); const [running, setRunning] = useState(false);
   const [copied, setCopied] = useState(false);
   const outputRef = useRef<HTMLPreElement>(null);
 
@@ -71,8 +71,7 @@ export default function CommandLauncher() {
       <div className="bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-xl w-full max-w-3xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-zinc-800">
           <div className="flex items-center gap-3">
-            <Terminal size={16} className="text-cyan-600 dark:text-cyan-400" />
-            <span className="text-sm font-semibold text-gray-900 dark:text-white">Command Launcher</span>
+            <Terminal size={16} className="text-cyan-600 dark:text-cyan-400" /><div className={`w-2 h-2 rounded-full ${wsStatus === "online" ? "bg-green-500 animate-pulse" : wsStatus === "offline" ? "bg-red-500" : "bg-yellow-500"}`} /><span className="text-sm font-semibold text-gray-900 dark:text-white">Command Launcher</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-500">Ctrl+K</span>
           </div>
           <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white"><X size={18} /></button>
