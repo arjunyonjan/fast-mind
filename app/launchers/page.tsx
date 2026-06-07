@@ -124,7 +124,6 @@ export default function LaunchersPage() {
   };
 
   const handleEdit = (launcher: Launcher) => {
-    console.log("Edit clicked:", launcher);
     setEditingLauncher(launcher);
     setFormData({
       name: launcher.name,
@@ -135,27 +134,32 @@ export default function LaunchersPage() {
     setEditModalOpen(true);
   };
 
-  const handleRun = async (id: string, name: string) => {
+    const handleRun = async (id: string, name: string) => {
+    const launcher = launchers.find(l => l._id === id);
+    if (!launcher) return;
+    
     setRunningId(id);
-    try {
-      const res = await fetch("/api/launchers/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id })
-      });
-      const data = await res.json();
-      setOutputModal({
-        launcherName: name,
-        output: data.output || data.error || "No output"
-      });
-    } catch (err: any) {
-      setOutputModal({
-        launcherName: name,
-        output: err.message || "Execution failed"
-      });
-    } finally {
+    let output = "";
+    
+    const ws = new WebSocket("ws://localhost:3001");
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ command: launcher.command, cwd: launcher.cwd || "C:\\work\\next-fastmind" }));
+    };
+    ws.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.type === "output") output += data.data;
+        else if (data.type === "done") {
+          setOutputModal({ launcherName: name, output: output + "\n✅ " + data.data });
+          ws.close();
+          setRunningId(null);
+        }
+      } catch {}
+    };
+    ws.onerror = () => {
+      setOutputModal({ launcherName: name, output: "❌ Terminal offline. Run: node terminal-server.js" });
       setRunningId(null);
-    }
+    };
   };
 
   return (
