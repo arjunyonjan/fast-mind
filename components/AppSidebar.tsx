@@ -61,6 +61,7 @@ export default function AppSidebar() {
           <div className="px-3 py-1 mt-2 text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">DOCS</div>
           <Link href="/" className={link("/")}><Home size={17} />{!collapsed && <span>Home</span>}</Link>
           <Link href="/documents" className={link("/documents")}><FileText size={17} />{!collapsed && <span>Documents</span>}</Link>
+          <Link href="/pending" className={link("/pending")}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 8v4l3 3M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/></svg>{!collapsed && <span>Pending</span>}</Link>
           <Link href="/tasks" className={link("/tasks")}><LayoutGrid size={17} />{!collapsed && <span>Tasks</span>}</Link>
           <Link href="/diagrams" className={link("/diagrams")}><FileImage size={17} />{!collapsed && <span>Diagrams</span>}</Link>
           <Link href="/cloudinary-gallery" className={link("/cloudinary-gallery")}><Camera size={17} />{!collapsed && <span>Gallery</span>}</Link>
