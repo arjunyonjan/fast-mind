@@ -125,8 +125,7 @@ export async function POST(req: Request) {
     }
 
     // LIST TASKS
-        if (intent === "list_pending") {
-      const pending = await db.collection("pendingTasks").find({ sessionId }).toArray();
+        if (intent === "list_pending") { const pending = await db.collection("pendingTasks").find({ sessionId: body.sessionId }).toArray();
       if (pending.length === 0) {
         return NextResponse.json({ reply: "📭 No pending tasks or documents." });
       }
