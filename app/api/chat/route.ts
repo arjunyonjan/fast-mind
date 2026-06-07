@@ -292,6 +292,14 @@ export async function POST(req: Request) {
     if (!m) return NextResponse.json({ reply: "⚠️ Invalid response" }, { status: 502 });
     const p = JSON.parse(m[0]);
 
+    // Store pending task
+    await db.collection("pendingTasks").insertOne({
+      sessionId: body.sessionId,
+      type: "task",
+      data: { title: p.title, description: p.description, priority: p.priority },
+      createdAt: new Date()
+    });
+
     const reply = `📝 **Ready to create?**\n\n**Title:** ${p.title || "Untitled"}\n**Description:** ${p.description || "None"}\n**Priority:** ${p.priority || "medium"}\n\nReply **yes** to confirm, or describe changes.`;
     return NextResponse.json({ reply });
   } catch (err: any) {
