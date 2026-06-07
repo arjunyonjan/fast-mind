@@ -23,10 +23,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-gray-50 dark:bg-zinc-950 h-screen overflow-hidden">
-    <div className="fixed top-2 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium shadow-sm bg-black/80 backdrop-blur-sm">
-  <div className={`w-1.5 h-1.5 rounded-full ${typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'bg-green-400' : 'bg-orange-400 animate-pulse'}`}></div>
-  <span className="text-white">{typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'LIVE' : 'LOCAL'}</span>
-</div>
         <ThemeProvider>
           <ToastProvider>
             <MobileMenuButton />
