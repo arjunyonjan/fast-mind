@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     if (lowerMsg.includes("list pending") || lowerMsg.includes("show pending")) intent = "list_pending";
     else if (lowerMsg.includes("list tasks")) intent = "list_tasks";
     else if (lowerMsg.includes("create task")) intent = "create_task";
-    else if (lowerMsg === "yes" || lowerMsg === "confirm") intent = "confirm_task";
+    else if (lowerMsg === "yes" || lowerMsg === "confirm") intent = "confirm_task"; else if (lowerMsg.includes("coding") || lowerMsg.includes("learn") || lowerMsg.includes("study")) intent = "confirm_task"; else if (lowerMsg.includes("buy") || lowerMsg.includes("get") || lowerMsg.includes("pickup")) intent = "confirm_task"; else if (lowerMsg.includes("write") || lowerMsg.includes("post") || lowerMsg.includes("share")) intent = "confirm_task";
 
     // AI intent if not hardcoded
     if (intent === "chat") {
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: "✅ Created: " + task.title });
     }
 
-    async function matchPendingTask(userMsg: string, pendingList: any[]) {
+        async function matchPendingTask(userMsg: string, pendingList: any[]) {
       if (pendingList.length === 1) return pendingList[0];
       const taskList = pendingList.map((p, i) => `${i+1}. ${p.data.title} (${p.type})`).join("\n");
       const matchRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
         headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "deepseek-chat",
-          messages: [{ role: "system", content: `Pending items:\n${taskList}\nUser: "${userMsg}". Return ONLY the number (1-${pendingList.length}) of the best match.` }],
+          messages: [{ role: "system", content: `You are a smart matcher. Pending items:\n${taskList}\nUser says: "${userMsg}".\nWhich pending item best matches? Consider keywords. Return ONLY the number (1-${pendingList.length}).` }],
           temperature: 0, max_tokens: 10
         }),
       });
