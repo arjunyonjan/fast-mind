@@ -28,12 +28,8 @@ export default function CommandLauncher() {
     }
   }, [output]);
 
-  const blockedFrontend = ["rm -rf", "del /f", "format", "shutdown", "taskkill", "rd /s"]; const run = (command: string) => { if (blockedFrontend.some(b => command.toLowerCase().includes(b))) { setOutput("⛔ BLOCKED: Dangerous command not allowed"); setRunning(false); return; }
-    const isLocal = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-    if (!isLocal) {
-        setOutput("⚠️ Terminal only available in local development (localhost). Running on Vercel? Use localhost:3000 instead.");
-        return;
-    }
+  const blockedFrontend = ["rm -rf", "del /f", "format", "shutdown", "taskkill", "rd /s"]; const run = async (command: string) => { const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"; if (!isLocal) { try { const res = await fetch("http://localhost:3001"); if (!res.ok) throw new Error(); } catch { setOutput("⚠️ Terminal server not reachable (run: node terminal-server.js locally)"); setRunning(false); return; } } if (blockedFrontend.some(b => command.toLowerCase().includes(b))) { setOutput("⛔ BLOCKED: Dangerous command not allowed"); setRunning(false); return; }
+    const isLocalDev = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"); if (!isLocalDev) { setOutput("⚠️ Terminal only available in local development (localhost). Running on Vercel? Use localhost:3000 instead."); return; }
     if (!command.trim()) return;
     setRunning(true);
     setOutput("");
