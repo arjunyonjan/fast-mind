@@ -31,9 +31,9 @@ export async function POST(req: Request) {
     // Hardcoded intent
     let intent = "chat";
     const lowerMsg = message.toLowerCase();
-    if (lowerMsg.includes("create task")) intent = "create_task";
-    else if (lowerMsg === "yes" || lowerMsg === "confirm") intent = "confirm_task";
-    else if (lowerMsg.includes("list tasks")) intent = "list_tasks";
+    if (lowerMsg.includes("list tasks")) intent = "list_tasks"; else if (lowerMsg.includes("create task")) intent = "create_task"; else if (lowerMsg === "yes" || lowerMsg === "confirm") intent = "confirm_task";
+    console.log('[DEBUG] Hardcoded intent:', intent);
+    console.log('[DEBUG] Lower message:', lowerMsg);
 
     // AI intent if not hardcoded
     if (intent === "chat") {
