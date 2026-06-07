@@ -86,7 +86,7 @@ const dumpCode = () => {
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-zinc-800">
           <div className="flex items-center gap-3">
             <Terminal size={16} className="text-cyan-600 dark:text-cyan-400" />
-            <span className="text-sm font-semibold text-gray-900 dark:text-white">Command Launcher</span>
+            <span className="text-sm font-semibold text-gray-900 dark:text-white">Command Launcher</span><span className="ml-2 text-[9px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 font-mono">LOCAL ONLY</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-500">Ctrl+K</span>
           </div>
           <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white"><X size={18} /></button>
