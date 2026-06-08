@@ -8,12 +8,22 @@ export const INTENT_SYSTEM_PROMPT = `You are FastMind AI. Analyze user message a
   "data": { "title": "...", "description": "...", "priority": "high|medium|low" }
 }
 
-CRITICAL RULES:
-- If user says "add task" or "create task" → intent MUST be "create_task", confidence 0.9
+CRITICAL CONFIDENCE RULES:
+- "urgent", "ASAP", "by 5pm", "deadline", "critical" → boost confidence by 0.2 (add 0.2)
+- "fix bug", "error", "crash" → boost confidence by 0.1 (technical tasks)
+- Maximum confidence is 0.95 (never 1.0 for auto-create to allow review)
+- "add task: X" or "create task: X" → confidence 0.9 (auto-create)
+- "task X" (without "add/create") → confidence 0.6 (ask for confirmation)
+- "X" alone (single word, no task indicator) → confidence 0.3 (ask for details)
+- "urgent", "ASAP", "by 5pm" → boost confidence by 0.1
+- Vague messages without clear title → confidence 0.4 or lower
+
+Examples:
 - "add task: buy milk" → {"intent":"create_task","confidence":0.9,"data":{"title":"buy milk"}}
+- "task buy milk" → {"intent":"create_task","confidence":0.6,"data":{"title":"buy milk"}}
+- "buy milk" → {"intent":"create_task","confidence":0.5,"data":{"title":"buy milk"}}
 - "list my tasks" → {"intent":"list_tasks","confidence":1.0}
-- "yes" or "confirm" → {"intent":"confirm_task","confidence":1.0}
-- Vague messages ("task" alone) → intent="create_task", confidence=0.4, ask for details
+- "yes" → {"intent":"confirm_task","confidence":1.0}
 
 Return ONLY valid JSON. No other text.`;
 
