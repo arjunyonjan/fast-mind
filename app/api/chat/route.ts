@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
+import { classifyIntent } from "@/lib/intent-classifier";
 import { recordUsage } from "@/lib/token-monitor";
 import crypto from "crypto";
 
@@ -28,40 +29,24 @@ export async function POST(req: Request) {
 
     const recentHistory = Array.isArray(history) ? history.slice(-10) : [];
     
-    // Hardcoded intent
-    let intent = "chat";
-    const lowerMsg = message.toLowerCase();
-    if (lowerMsg.includes("list pending") || lowerMsg.includes("show pending")) intent = "list_pending";
-    else if (lowerMsg.includes("list tasks")) intent = "list_tasks";
-    else if (lowerMsg.includes("create task")) intent = "create_task";
-    else if (lowerMsg === "yes" || lowerMsg === "confirm") intent = "confirm_task"; else if (lowerMsg.includes("coding") || lowerMsg.includes("learn") || lowerMsg.includes("study")) intent = "confirm_task"; else if (lowerMsg.includes("buy") || lowerMsg.includes("get") || lowerMsg.includes("pickup")) intent = "confirm_task"; else if (lowerMsg.includes("write") || lowerMsg.includes("post") || lowerMsg.includes("share")) intent = "confirm_task";
-
-    // AI intent if not hardcoded
-    if (intent === "chat") {
-      const classifyMessages = [
-        { role: "system" as const, content: "You are FastMind AI. Actions: create_task, confirm_task, list_tasks, list_pending. Return ONLY the word." },
-        ...recentHistory.map((m: any) => ({ role: m.role, content: m.content })),
-        { role: "user" as const, content: message }
-      ];
-      const classifyRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "deepseek-chat", messages: classifyMessages, temperature: 0, max_tokens: 10 }),
-      });
-      const classifyJson = classifyRes.ok ? await classifyRes.json() : null;
-      intent = classifyJson?.choices?.[0]?.message?.content?.trim().toLowerCase() || "create_task";
-      trackTokens(classifyJson, "deepseek-chat");
-    }
+    // Unified intent classification
+    const { intent, confidence, data } = await classifyIntent(message, apiKey, recentHistory);
+    console.log("[DEBUG] Intent:", intent, "Confidence:", confidence);
 
     const db = await connectToDatabase();
 
-    async function createTaskFromData(p: any) {
-      const task = { title: p.title || "Untitled", description: p.description || "", priority: p.priority || "medium", status: "pending" };
+    async function createTaskFromData(taskData: any) {
+      const task = { 
+        title: taskData.title || "Untitled", 
+        description: taskData.description || "", 
+        priority: taskData.priority || "medium", 
+        status: "pending" 
+      };
       await db.collection("tasks").insertOne({ ...task, spaceId: spaceId || null, createdAt: new Date(), source: "deepseek" });
       return NextResponse.json({ reply: "✅ Created: " + task.title });
     }
 
-        async function matchPendingTask(userMsg: string, pendingList: any[]) {
+    async function matchPendingTask(userMsg: string, pendingList: any[]) {
       if (pendingList.length === 1) return pendingList[0];
       const taskList = pendingList.map((p, i) => `${i+1}. ${p.data.title} (${p.type})`).join("\n");
       const matchRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
@@ -69,14 +54,20 @@ export async function POST(req: Request) {
         headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "deepseek-chat",
-          messages: [{ role: "system", content: `You are a smart matcher. Pending items:\n${taskList}\nUser says: "${userMsg}".\nWhich pending item best matches? Consider keywords. Return ONLY the number (1-${pendingList.length}).` }],
+          messages: [{ role: "system", content: `Pending items:\n${taskList}\nUser: "${userMsg}". Return ONLY the number (1-${pendingList.length}) of the best match.` }],
           temperature: 0, max_tokens: 10
         }),
       });
       if (!matchRes.ok) return pendingList[0];
-      const data = await matchRes.json();
-      const idx = parseInt(data.choices?.[0]?.message?.content?.trim() || "1") - 1;
+      const resData = await matchRes.json();
+      const idx = parseInt(resData.choices?.[0]?.message?.content?.trim() || "1") - 1;
       return pendingList[Math.min(Math.max(0, idx), pendingList.length - 1)];
+    }
+
+    // AUTO-CONFIRM: High confidence create_task
+    if (intent === "create_task" && confidence >= 0.8 && data?.title) {
+      await createTaskFromData(data);
+      return NextResponse.json({ reply: `✅ Auto-created: ${data.title} (${Math.round(confidence * 100)}% confident)` });
     }
 
     // LIST PENDING
@@ -86,7 +77,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ reply: "📭 No pending tasks or documents." });
       }
       const list = pending.map((p, i) => `${i+1}. ${p.data.title || "Untitled"} (${p.type})`).join("\n");
-      return NextResponse.json({ reply: `📋 **Pending items:**\n\n${list}\n\nReply with number or description to create.` });
+      return NextResponse.json({ reply: "📋 **Pending items:**\n\n" + list + "\n\nReply with number or description to create." });
     }
 
     // LIST TASKS
@@ -122,7 +113,7 @@ export async function POST(req: Request) {
       return result;
     }
 
-    // CREATE TASK
+    // CREATE TASK (store as pending for confirmation)
     const r = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
@@ -147,8 +138,7 @@ export async function POST(req: Request) {
       createdAt: new Date()
     });
 
-    const replyMsg = "📝 Ready to create?\n\nTitle: " + p.title + "\nPriority: " + p.priority + "\n\nReply yes to confirm.";
-    return NextResponse.json({ reply: replyMsg });
+    return NextResponse.json({ reply: "📝 Ready to create?\n\nTitle: " + p.title + "\nPriority: " + p.priority + "\n\nReply yes to confirm." });
   } catch (err: any) {
     return NextResponse.json({ reply: "⚠️ " + err.message }, { status: 502 });
   }
