@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
+import { extractIntent } from "@/lib/intent-classifier";
 import { classifyIntent } from "@/lib/intent-classifier";
 import { recordUsage } from "@/lib/token-monitor";
 import crypto from "crypto";
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
     const recentHistory = Array.isArray(history) ? history.slice(-10) : [];
     
     // Unified intent classification
-    const { intent, confidence, data } = await classifyIntent(message, apiKey, recentHistory);
+    const extracted = extractIntent(message); const intent = extracted.intent; const confidence = extracted.confidence; const data = extracted.data;
     console.log("[DEBUG] Intent:", intent, "Confidence:", confidence);
 
     const db = await connectToDatabase();
@@ -111,6 +112,56 @@ export async function POST(req: Request) {
       const result = await createTaskFromData(matched.data);
       await db.collection("pendingTasks").deleteOne({ _id: matched._id });
       return result;
+    }
+    // REJECT TASK (user said no to pending)
+    if (intent === "reject_task") {
+      const pending = await db.collection("pendingTasks").findOne({ sessionId: sessionId, type: "task" });
+      if (pending) {
+        await db.collection("pendingTasks").deleteOne({ _id: pending._id });
+        return NextResponse.json({ reply: "❌ Task creation cancelled." });
+      }
+      return NextResponse.json({ reply: "No pending task to cancel." });
+    }
+
+    // DELETE TASK
+    if (intent === "delete_task" && data?.identifier) {
+      const taskId = data.identifier;
+      const result = await db.collection("tasks").deleteOne({ 
+        $or: [
+          { _id: taskId },
+          { title: taskId }
+        ]
+      });
+      if (result.deletedCount === 0) {
+        return NextResponse.json({ reply: `❌ Task not found: ${taskId}` });
+      }
+      return NextResponse.json({ reply: `🗑️ Deleted task: ${taskId}` });
+    }
+
+    // COMPLETE TASK
+    if (intent === "complete_task" && data?.identifier) {
+      const taskId = data.identifier;
+      const result = await db.collection("tasks").updateOne(
+        { $or: [{ _id: taskId }, { title: taskId }] },
+        { $set: { status: "completed", updatedAt: new Date() } }
+      );
+      if (result.matchedCount === 0) {
+        return NextResponse.json({ reply: `❌ Task not found: ${taskId}` });
+      }
+      return NextResponse.json({ reply: `✅ Completed task: ${taskId}` });
+    }
+
+    // CREATE DOCUMENT
+    if (intent === "create_document" && data?.title) {
+      const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      await db.collection("documents").insertOne({
+        title: data.title,
+        content: data.description || "",
+        slug,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      return NextResponse.json({ reply: `📄 Document created: ${data.title}` });
     }
 
     // CREATE TASK (store as pending for confirmation)
