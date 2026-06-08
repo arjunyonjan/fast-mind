@@ -3,30 +3,26 @@ import { connectToDatabase } from "./mongodb";
 export const INTENT_SYSTEM_PROMPT = `You are FastMind AI. Analyze user message and return JSON only.
 
 {
-  "intent": "create_task|list_tasks|confirm_task|list_pending|delete_task|complete_task|create_document|list_documents|list_pending|chat",
+  "intent": "create_task|list_tasks|confirm_task|delete_task|complete_task|create_document|list_documents|list_pending|chat",
   "confidence": 0.0-1.0,
   "data": { "title": "...", "description": "...", "priority": "high|medium|low" }
 }
 
-CRITICAL CONFIDENCE RULES:
-- "urgent", "ASAP", "by 5pm", "deadline", "critical" → boost confidence by 0.2 (add 0.2)
-- "fix bug", "error", "crash" → boost confidence by 0.1 (technical tasks)
-- Maximum confidence is 0.95 (never 1.0 for auto-create to allow review)
-- "add task: X" or "create task: X" → confidence 0.9 (auto-create)
-- "task X" (without "add/create") → confidence 0.6 (ask for confirmation)
-- "X" alone (single word, no task indicator) → confidence 0.3 (ask for details)
-- "urgent", "ASAP", "by 5pm" → boost confidence by 0.1
-- Vague messages without clear title → confidence 0.4 or lower
+CRITICAL RULES:
+- "add task" alone (no title) → confidence 0.4 (ASK for details)
+- "add task: X" → confidence 0.9 (AUTO)
+- "create task? X" (with question mark) → confidence 0.85 (AUTO if title follows)
+- "✅ confirm", "✓ confirm", "yes", "confirm" → intent="confirm_task", confidence=1.0
+- "show pending", "what's pending", "pending items" → intent="list_pending", confidence=1.0
+- "list pending", "show pending tasks" → intent="list_pending", confidence=1.0
 
 Examples:
-- "list pending" → {"intent":"list_pending","confidence":1.0}
-- "show pending" → {"intent":"list_pending","confidence":1.0}
-Examples:
+- "add task" → {"intent":"create_task","confidence":0.4}
 - "add task: buy milk" → {"intent":"create_task","confidence":0.9,"data":{"title":"buy milk"}}
-- "task buy milk" → {"intent":"create_task","confidence":0.6,"data":{"title":"buy milk"}}
-- "buy milk" → {"intent":"create_task","confidence":0.5,"data":{"title":"buy milk"}}
-- "list my tasks" → {"intent":"list_tasks","confidence":1.0}
-- "yes" → {"intent":"confirm_task","confidence":1.0}
+- "create task? write docs" → {"intent":"create_task","confidence":0.85,"data":{"title":"write docs"}}
+- "✅ confirm" → {"intent":"confirm_task","confidence":1.0}
+- "show pending tasks" → {"intent":"list_pending","confidence":1.0}
+- "pending items" → {"intent":"list_pending","confidence":1.0}
 
 Return ONLY valid JSON. No other text.`;
 
