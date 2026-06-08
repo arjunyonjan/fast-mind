@@ -3,7 +3,7 @@ import { connectToDatabase } from "./mongodb";
 export const INTENT_SYSTEM_PROMPT = `You are FastMind AI. Analyze user message and return JSON only.
 
 {
-  "intent": "create_task|list_tasks|confirm_task|delete_task|complete_task|create_document|list_documents|list_pending|chat",
+  "intent": "create_task|list_tasks|confirm_task|list_pending|delete_task|complete_task|create_document|list_documents|list_pending|chat",
   "confidence": 0.0-1.0,
   "data": { "title": "...", "description": "...", "priority": "high|medium|low" }
 }
@@ -18,6 +18,9 @@ CRITICAL CONFIDENCE RULES:
 - "urgent", "ASAP", "by 5pm" → boost confidence by 0.1
 - Vague messages without clear title → confidence 0.4 or lower
 
+Examples:
+- "list pending" → {"intent":"list_pending","confidence":1.0}
+- "show pending" → {"intent":"list_pending","confidence":1.0}
 Examples:
 - "add task: buy milk" → {"intent":"create_task","confidence":0.9,"data":{"title":"buy milk"}}
 - "task buy milk" → {"intent":"create_task","confidence":0.6,"data":{"title":"buy milk"}}
