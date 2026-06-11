@@ -35,15 +35,17 @@ export default function PendingPage() {
     }
   };
 
-  const confirmItem = async (title: string) => {
-    const res = await fetch("/api/chat", {
+  const confirmItem = async (id: string) => {
+    const res = await fetch("/api/pending", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: `confirm "${title}"`, messages: [], spaceId: null, sessionId })
+      body: JSON.stringify({ sessionId, id })
     });
     const data = await res.json();
-    alert(data.reply);
-    fetchPending(sessionId);
+    if (data.success) {
+      alert(data.reply);
+      fetchPending(sessionId);
+    }
   };
 
   return (
@@ -72,7 +74,7 @@ export default function PendingPage() {
                 <h3 className="font-semibold text-zinc-900 dark:text-white">{item.data.title}</h3>
                 {item.data.description && <p className="text-sm text-zinc-500 mt-1">{item.data.description}</p>}
               </div>
-              <button onClick={() => confirmItem(item.data.title)} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition">
+              <button onClick={() => confirmItem(item._id)} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition">
                 Confirm
               </button>
             </div>

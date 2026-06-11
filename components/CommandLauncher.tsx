@@ -35,8 +35,27 @@ export default function CommandLauncher() {
   }
 };
 
-const runCommand = () => {
+const runCommand = async () => {
     if (!cmd.trim() || running) return;
+
+    // Navigation commands: route through chat API instead of shell
+    if (/^(open|show|go to|navigate|view)\s/i.test(cmd.trim())) {
+      setRunning(true);
+      setOutput("⏳ Processing...");
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: cmd, messages: [] }),
+        });
+        const data = await res.json();
+        if (data.redirect) { window.location.href = data.redirect; return; }
+        setOutput(data.reply || "Done.");
+      } catch { setOutput("❌ Error"); }
+      setRunning(false);
+      return;
+    }
+
     setRunning(true);
     setOutput("");
     

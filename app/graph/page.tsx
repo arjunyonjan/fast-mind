@@ -31,19 +31,18 @@ export default function GraphPage() {
 
   const simRef = useRef<any>(null);
   const transformRef = useRef({ x: 0, y: 0, k: 1 });
-  const [canvasSize, setCanvasSize] = useState({ w: 900, h: 600 });
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setCanvasSize({ w: Math.floor(width), h: Math.floor(height) });
-      }
-    });
-    ro.observe(el);
-    setCanvasSize({ w: Math.floor(el.clientWidth), h: Math.floor(el.clientHeight) });
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+    const resize = () => {
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(container);
     return () => ro.disconnect();
   }, []);
 
@@ -119,7 +118,7 @@ export default function GraphPage() {
     sim.on("tick", draw);
 
     return () => { sim.stop(); };
-  }, [nodes, edges, hoveredNode, canvasSize.w, canvasSize.h]);
+  }, [nodes, edges, hoveredNode]);
 
   const getNodeAt = (cx: number, cy: number) => {
     const t = transformRef.current;
@@ -217,8 +216,6 @@ export default function GraphPage() {
         {error && <div className="absolute inset-0 flex items-center justify-center text-zinc-500 text-sm">{error}</div>}
         <canvas
           ref={canvasRef}
-          width={canvasSize.w}
-          height={canvasSize.h}
           onMouseMove={handleMouseMove}
           onClick={handleClick}
           onWheel={handleWheel}
