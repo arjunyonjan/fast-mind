@@ -25,14 +25,9 @@ export default function PendingPage() {
   const fetchPending = async (sid: string) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: "list pending", messages: [], spaceId: null, sessionId: sid })
-      });
+      const res = await fetch(`/api/pending?sessionId=${encodeURIComponent(sid)}`);
       const data = await res.json();
-      // Parse reply to extract items (simplified)
-      setItems([]); // TODO: parse properly
+      if (data.success) setItems(data.items);
     } catch (err) {
       console.error(err);
     } finally {

@@ -171,6 +171,7 @@ export default function Home() {
         body: JSON.stringify({ message: userMsg.content, messages: newMessages, spaceId: selectedSpace || null })
       });
       const data = await res.json();
+      if (data.redirect) { window.location.href = data.redirect; return; }
       const assistantMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', content: data.reply || "Done.", timestamp: Date.now() };
       const finalMessages = [...newMessages, assistantMsg];
       setMessages(finalMessages);

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { extractIntent } from "@/lib/intent-classifier";
-import { classifyIntent } from "@/lib/intent-classifier";
 import { recordUsage } from "@/lib/token-monitor";
 import crypto from "crypto";
 
@@ -49,7 +48,7 @@ export async function POST(req: Request) {
 
     async function matchPendingTask(userMsg: string, pendingList: any[]) {
       if (pendingList.length === 1) return pendingList[0];
-      const taskList = pendingList.map((p, i) => `${i+1}. ${p.data.title} (${p.type})`).join("\n");
+      const taskList = pendingList.map((p, i) => `${i+1}. ${p.data?.title || "Untitled"} (${p.type})`).join("\n");
       const matchRes = await fetch("https://api.deepseek.com/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
@@ -61,6 +60,7 @@ export async function POST(req: Request) {
       });
       if (!matchRes.ok) return pendingList[0];
       const resData = await matchRes.json();
+      trackTokens(resData, "deepseek-chat");
       const idx = parseInt(resData.choices?.[0]?.message?.content?.trim() || "1") - 1;
       return pendingList[Math.min(Math.max(0, idx), pendingList.length - 1)];
     }
@@ -81,12 +81,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: "📋 **Pending items:**\n\n" + list + "\n\nReply with number or description to create." });
     }
 
-    // LIST TASKS
+    // LIST TASKS (with optional filters)
     if (intent === "list_tasks") {
-      const tasks = await db.collection("tasks").find({}).sort({ createdAt: -1 }).limit(10).toArray();
+      const filter: any = {};
+      if (data?.status) filter.status = data.status;
+      if (data?.priority) filter.priority = data.priority;
+      const tasks = await db.collection("tasks").find(filter).sort({ createdAt: -1 }).limit(10).toArray();
       if (tasks.length === 0) return NextResponse.json({ reply: "📋 No tasks yet." });
+      const label = [data?.status, data?.priority].filter(Boolean).join(" ") || "";
       const list = tasks.map((t, i) => (i+1) + ". " + t.title + " — " + t.priority + " " + t.status).join("\n");
-      return NextResponse.json({ reply: "📋 Your tasks:\n\n" + list });
+      return NextResponse.json({ reply: "📋 " + (label ? label + " " : "") + "Tasks:\n\n" + list });
     }
 
     // CONFIRM TASK (multi-pending support)
@@ -151,6 +155,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: `✅ Completed task: ${taskId}` });
     }
 
+    // UPDATE TASK (priority, status)
+    if (intent === "update_task" && data?.identifier && data?.field && data?.value) {
+      const taskId = data.identifier;
+      const result = await db.collection("tasks").updateOne(
+        { $or: [{ _id: taskId }, { title: taskId }] },
+        { $set: { [data.field]: data.value, updatedAt: new Date() } }
+      );
+      if (result.matchedCount === 0) {
+        return NextResponse.json({ reply: `❌ Task not found: ${taskId}` });
+      }
+      return NextResponse.json({ reply: `✅ Updated task ${taskId}: ${data.field} → ${data.value}` });
+    }
+
     // CREATE DOCUMENT
     if (intent === "create_document" && data?.title) {
       const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -162,6 +179,34 @@ export async function POST(req: Request) {
         updatedAt: new Date()
       });
       return NextResponse.json({ reply: `📄 Document created: ${data.title}` });
+    }
+
+    // OPEN / NAVIGATE
+    if (intent === "open_item" && data?.type && data?.identifier) {
+      const path = data.type === "task" ? "/tasks" : `/documents/${data.identifier}`;
+      return NextResponse.json({ reply: `🔗 Opening ${data.type}: ${data.identifier}`, redirect: path });
+    }
+
+    // GENERAL CHAT
+    if (intent === "chat") {
+      const r = await fetch("https://api.deepseek.com/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: "You are a helpful assistant for a task management app. You can converse naturally and help users manage their tasks, documents, and productivity." },
+            { role: "user", content: message }
+          ],
+          temperature: 0.7,
+          max_tokens: 500,
+        }),
+      });
+      if (!r.ok) return NextResponse.json({ reply: "⚠️ DeepSeek error" }, { status: 502 });
+      const j = await r.json();
+      trackTokens(j, "deepseek-chat");
+      const reply = j.choices?.[0]?.message?.content || "⚠️ No response";
+      return NextResponse.json({ reply });
     }
 
     // CREATE TASK (store as pending for confirmation)
@@ -178,7 +223,7 @@ export async function POST(req: Request) {
     const j = await r.json();
     trackTokens(j, "deepseek-chat");
     const txt = j.choices?.[0]?.message?.content || "";
-    const m = txt.match(/\{[\s\S]*\}/);
+    const m = txt.match(/\{[\s\S]*?\}/);
     if (!m) return NextResponse.json({ reply: "⚠️ Invalid response" }, { status: 502 });
     const p = JSON.parse(m[0]);
 
@@ -191,6 +236,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ reply: "📝 Ready to create?\n\nTitle: " + p.title + "\nPriority: " + p.priority + "\n\nReply yes to confirm." });
   } catch (err: any) {
-    return NextResponse.json({ reply: "⚠️ " + err.message }, { status: 502 });
+    return NextResponse.json({ reply: "⚠️ Something went wrong. Please try again." }, { status: 502 });
   }
 }
